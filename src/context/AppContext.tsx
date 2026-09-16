@@ -1,7 +1,8 @@
 /**
- * File: AppContext.tsx
- * Trách nhiệm: Provider React Context bọc useAppLogic; expose hook useApp() cho components.
- * Liên quan: useAppLogic.ts, App.tsx, mọi component dùng useApp().
+ * File: context/AppContext.tsx
+ * Mục đích: Định nghĩa React Context toàn cục của SabTask. Provider gọi hook useAppLogic
+ * một lần duy nhất rồi chia sẻ toàn bộ state và actions xuống cây component,
+ * giúp mọi component truy cập dữ liệu chung qua hook useApp().
  */
 
 import React, { createContext, useContext, ReactNode } from 'react';
@@ -11,7 +12,7 @@ type AppContextType = ReturnType<typeof useAppLogic>;
 
 const AppContext = createContext<AppContextType | null>(null);
 
-/** Bọc cây component bằng state/actions toàn cục */
+/** Provider bọc cây component con và cung cấp state/actions toàn cục từ useAppLogic. */
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const logic = useAppLogic();
   return (
@@ -21,7 +22,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   );
 };
 
-/** Lấy context app; ném lỗi nếu ngoài AppProvider */
+/**
+ * Hook dùng để lấy state/actions toàn cục trong component.
+ * @returns Giá trị context của ứng dụng (kết quả của useAppLogic).
+ * @throws Error khi được gọi bên ngoài AppProvider.
+ */
 export const useApp = () => {
   const context = useContext(AppContext);
   if (!context) {

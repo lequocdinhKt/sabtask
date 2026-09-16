@@ -1,22 +1,21 @@
-
 /**
- * File: HeaderControls.tsx
- * Trách nhiệm: Nút theme sáng/tối, thông báo và toggle sidebar.
- * Liên quan: useUIState.ts, NotificationsPanel.tsx, Header.tsx.
+ * File: components/layout/header/HeaderControls.tsx
+ * Mục đích: Nhóm các nút điều khiển nhanh trên header. Gồm nút đổi giao diện sáng/tối,
+ * nút mở panel thông báo kèm chỉ dấu số thông báo chưa đọc, và các nút bật/tắt sidebar
+ * cho cả mobile lẫn desktop.
  */
 
 import React from 'react';
 import { useApp } from '../../../context/AppContext';
 import { Sun, Moon, Bell, PanelLeft, Menu } from 'lucide-react';
 
-/** Nút chuyển theme và mở panel thông báo */
+/** Component chứa nút đổi theme sáng/tối và nút mở panel thông báo. */
 export const HeaderControls: React.FC = () => {
   const { state, actions } = useApp();
   const notificationsCount = state.notifications.filter(n => !n.read).length;
 
   return (
     <>
-        {/* Theme Toggle */}
         <button 
           onClick={() => actions.setDarkMode(!state.darkMode)}
           className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl md:rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all shadow-sm"
@@ -24,7 +23,6 @@ export const HeaderControls: React.FC = () => {
           {state.darkMode ? <Sun size={20} /> : <Moon size={20} />}
         </button>
 
-        {/* Notifications */}
         <button 
           onClick={() => actions.setShowNotifications(!state.showNotifications)}
           className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center rounded-xl md:rounded-2xl bg-white dark:bg-dark-surface border border-slate-100 dark:border-dark-border text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-all relative shadow-sm"
@@ -38,17 +36,15 @@ export const HeaderControls: React.FC = () => {
   );
 };
 
-/** Nút mở/đóng sidebar trên mobile và desktop */
+/** Component nút bật/tắt sidebar: mở sidebar dạng overlay trên mobile, thu gọn cột trên desktop. */
 export const SidebarToggle: React.FC = () => {
     const { state, actions } = useApp();
     return (
         <>
-            {/* Mobile Toggle */}
             <button onClick={() => actions.setIsSidebarOpen(true)} className="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-white/10 rounded-xl transition-colors">
                 <Menu size={24} />
             </button>
 
-            {/* Desktop Toggle */}
             <button 
                 onClick={() => actions.setIsDesktopSidebarOpen(!state.isDesktopSidebarOpen)} 
                 className="hidden lg:flex p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl transition-colors"

@@ -1,28 +1,35 @@
 /**
- * File: HeaderTimer.tsx
- * Trách nhiệm: Hiển thị timer đang chạy và nút dừng trên header.
- * Liên quan: useTimeTracking.ts, Header.tsx, TaskModal.
+ * File: components/layout/header/HeaderTimer.tsx
+ * Mục đích: Widget theo dõi thời gian trên header. Khi có timer đang chạy, widget hiển thị
+ * thời lượng đếm lên theo từng giây cùng tên task tương ứng và cho phép dừng timer ngay
+ * tại header; nếu không có timer nào thì widget không render gì.
  */
 
 import React, { useState, useEffect } from 'react';
 import { StopCircle } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 
-/** Widget timer active trên header — hiện thời lượng và tên task */
+/** Component hiển thị timer đang chạy kèm nút dừng, lấy dữ liệu timer từ context. */
 export const HeaderTimer: React.FC = () => {
   const { state, actions } = useApp();
   const [timerDuration, setTimerDuration] = useState(0);
   const activeTask = state.activeTimer ? state.rawTasks.find(t => t.id === state.activeTimer?.taskId) : null;
 
+  /**
+   * Chạy lại mỗi khi timer đang hoạt động thay đổi: nếu có timer thì tính thời lượng ngay
+   * rồi tạo setInterval cập nhật mỗi giây, nếu không thì đưa thời lượng về 0.
+   * Cleanup xoá interval để tránh đếm tiếp sau khi dừng timer hoặc unmount.
+   */
   useEffect(() => {
     let interval: number;
     if (state.activeTimer) {
+      /** Tính lại số giây đã trôi qua kể từ thời điểm bắt đầu của timer. */
       const updateTimer = () => {
         const start = new Date(state.activeTimer!.startTime).getTime();
         const now = new Date().getTime();
         setTimerDuration(Math.floor((now - start) / 1000));
       };
-      updateTimer(); // Initial call
+      updateTimer();
       interval = window.setInterval(updateTimer, 1000);
     } else {
       setTimerDuration(0);
@@ -30,7 +37,11 @@ export const HeaderTimer: React.FC = () => {
     return () => clearInterval(interval);
   }, [state.activeTimer]);
 
-  /** Định dạng giây thành HH:MM:SS */
+  /**
+   * Chuyển tổng số giây sang chuỗi thời lượng dễ đọc để hiển thị trên widget.
+   * @param seconds Tổng số giây đã trôi qua của timer.
+   * @returns Chuỗi thời lượng dạng HH:MM:SS, mỗi thành phần luôn đủ hai chữ số.
+   */
   const formatDuration = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);

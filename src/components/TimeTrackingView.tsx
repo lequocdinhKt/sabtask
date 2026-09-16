@@ -1,7 +1,8 @@
 /**
- * File: TimeTrackingView.tsx
- * Trách nhiệm: Hiển thị lịch sử time entry và thống kê thời gian.
- * Liên quan: useTimeTracking.ts, types/models.ts (TimeEntry).
+ * File: components/TimeTrackingView.tsx
+ * Mục đích: Trang theo dõi thời gian làm việc, tổng hợp số liệu thống kê (thời lượng hôm nay,
+ * số phiên đo, thời lượng 7 ngày gần nhất) và liệt kê danh sách các phiên bấm giờ đã ghi nhận
+ * kèm task, dự án tương ứng.
  */
 
 import React from 'react';
@@ -12,21 +13,23 @@ import { format } from 'date-fns';
 import { useApp } from '../context/AppContext';
 import { formatDurationHoursMinutes, sumDurationLast7Days } from '../utils/timeAggregation';
 
-/** View theo dõi thời gian làm việc và log entries */
+/** Component chính của trang Time: ba thẻ thống kê thời gian và danh sách phiên bấm giờ gần đây. */
 export const TimeTrackingView: React.FC<TimeTrackingViewProps> = ({ timeEntries, tasks, projects }) => {
   const { state } = useApp();
   const { t } = state;
   
-  // Stats
   const today = new Date().toISOString().split('T')[0];
   const entriesToday = timeEntries.filter(t => t.startTime.startsWith(today));
   
   const totalSecondsToday = entriesToday.reduce((acc, curr) => acc + curr.durationSeconds, 0);
   const totalSecondsThisWeek = sumDurationLast7Days(timeEntries);
   
+  /** Bí danh của hàm tiện ích định dạng tổng số giây thành chuỗi giờ/phút dùng lại trong view. */
   const formatDuration = formatDurationHoursMinutes;
 
+  /** Lấy tiêu đề task theo id để hiển thị cho từng phiên bấm giờ; trả về 'Unknown Task' nếu không tìm thấy. */
   const getTaskTitle = (taskId: string) => tasks.find(t => t.id === taskId)?.title || 'Unknown Task';
+  /** Lấy tên dự án chứa task tương ứng để hiện nhãn dự án; trả về null nếu không xác định được. */
   const getProjectName = (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return null;

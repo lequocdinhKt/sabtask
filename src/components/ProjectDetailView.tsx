@@ -1,7 +1,8 @@
 /**
- * File: ProjectDetailView.tsx
- * Trách nhiệm: Chi tiết dự án — stats, kanban/list toggle, quản lý task.
- * Liên quan: project-detail/*, KanbanBoard, TaskListView.
+ * File: components/ProjectDetailView.tsx
+ * Mục đích: Trang chi tiết của một dự án, gồm phần header hành động, hàng thống kê tiến độ
+ * và ba tab nội dung: bảng Kanban, danh sách task và danh sách thành viên tham gia.
+ * Tự quản lý bộ lọc riêng (từ khoá, độ ưu tiên, người thực hiện) áp cho task của dự án này.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -14,7 +15,7 @@ import { ProjectHeader } from './project-detail/ProjectHeader';
 import { ProjectStats } from './project-detail/ProjectStats';
 import { useApp } from '../context/AppContext';
 
-/** View chi tiết project với kanban hoặc list task */
+/** Component trang chi tiết dự án: hiển thị thống kê và chuyển đổi giữa các tab bảng, danh sách, thành viên. */
 export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   project, tasks, users, onBack, onEditProject, onDeleteProject,
   onUpdateTaskStatus, onEditTask, onCreateTask
@@ -23,17 +24,19 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   const { t } = state;
   const [activeTab, setActiveTab] = useState<'board' | 'list' | 'team'>('board');
   
-  // Local Filter State
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     priority: 'ALL',
     assigneeId: 'ALL'
   });
 
-  // Filter data for this project
   const projectTasks = tasks.filter(t => t.projectId === project.id);
   
-  // Apply local filters
+  /**
+   * Lọc task của dự án theo bộ lọc cục bộ để truyền cho tab bảng và tab danh sách:
+   * khớp từ khoá trong tiêu đề hoặc mô tả, khớp độ ưu tiên và khớp người được giao.
+   * Tính lại mỗi khi danh sách task của dự án hoặc bộ lọc thay đổi.
+   */
   const filteredProjectTasks = useMemo(() => {
     return projectTasks.filter(t => {
        const searchMatch = 
@@ -48,7 +51,6 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
   
   const projectMembers = users.filter(u => project.members?.includes(u.id));
   
-  // Stats - calculated on all project tasks (ignoring filters for overview)
   const completed = projectTasks.filter(t => t.status === TaskStatus.DONE).length;
   const inProgress = projectTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length;
   const progress = projectTasks.length === 0 ? 0 : Math.round((completed / projectTasks.length) * 100);
@@ -71,7 +73,6 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
         members={projectMembers}
       />
 
-      {/* Tabs */}
       <div className="mt-6 flex gap-1 mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
          <button 
             onClick={() => setActiveTab('board')}
@@ -93,7 +94,6 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({
          </button>
       </div>
 
-      {/* Tab Content */}
       <div className="mt-2">
          {activeTab === 'board' && (
             <div className="h-[600px] lg:h-[calc(100vh-350px)] min-h-[500px]">

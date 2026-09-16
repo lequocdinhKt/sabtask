@@ -1,7 +1,8 @@
 /**
- * File: TaskDetails.tsx
- * Trách nhiệm: Form chi tiết task — tiêu đề, mô tả, status, priority, AI gợi ý.
- * Liên quan: useTaskForm.ts, groqService.ts, TaskModal.tsx.
+ * File: components/task-modal/TaskDetails.tsx
+ * Mục đích: Nội dung tab "Chi tiết" trong modal task, gồm các trường nhập tiêu đề, trạng thái,
+ * mức ưu tiên, project, người thực hiện, hạn hoàn thành và mô tả. Ngoài ra cung cấp hai nút gọi AI:
+ * tự gợi ý mức ưu tiên và gợi ý danh sách subtask từ nội dung task đang nhập.
  */
 
 import React from 'react';
@@ -9,7 +10,10 @@ import { Sparkles } from 'lucide-react';
 import { TaskDetailsProps, TaskStatus, Priority } from '../../types';
 import { useApp } from '../../context/AppContext';
 
-/** Tab form thông tin chi tiết task */
+/**
+ * Component form chi tiết task: nhận giá trị và setter của từng trường từ modal cha nên không
+ * tự giữ state, chỉ chịu trách nhiệm hiển thị và đẩy thay đổi lên trên.
+ */
 export const TaskDetails: React.FC<TaskDetailsProps> = ({
   title, setTitle, description, setDescription,
   status, setStatus, priority, setPriority,

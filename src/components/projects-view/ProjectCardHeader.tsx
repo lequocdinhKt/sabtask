@@ -1,7 +1,7 @@
 /**
- * File: ProjectCardHeader.tsx
- * Trách nhiệm: Header thẻ project — badge status, nút sửa/xóa.
- * Liên quan: ProjectsView.tsx, types/props.ts.
+ * File: components/projects-view/ProjectCardHeader.tsx
+ * Mục đích: Phần đầu của thẻ dự án trong lưới danh sách dự án, hiển thị badge trạng thái
+ * và hai nút sửa / xoá chỉ hiện khi người dùng trỏ chuột vào thẻ.
  */
 
 import React from 'react';
@@ -9,8 +9,13 @@ import { ProjectCardHeaderProps } from '../../types';
 import { Badge } from '../ui/Badge';
 import { Edit, Trash2 } from 'lucide-react';
 
-/** Header card project với status badge và actions */
+/** Component hiển thị badge trạng thái dự án và nhóm nút sửa/xoá trên thẻ dự án. */
 export const ProjectCardHeader: React.FC<ProjectCardHeaderProps> = ({ status, onEdit, onDelete }) => {
+    /**
+     * Chọn biến thể màu của badge tương ứng với trạng thái dự án.
+     * @param s Trạng thái dự án (ACTIVE, COMPLETED, ARCHIVED).
+     * @returns Tên biến thể màu dùng cho component Badge.
+     */
     const getStatusColor = (s: string) => {
         switch(s) {
             case 'ACTIVE': return 'success';

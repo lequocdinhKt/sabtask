@@ -1,7 +1,6 @@
 /**
- * File: ProductivityCard.tsx
- * Trách nhiệm: Thẻ năng suất tuần — % hoàn thành task đến hạn.
- * Liên quan: useDashboardData.ts, Dashboard.tsx.
+ * File: components/dashboard/ProductivityCard.tsx
+ * Mục đích: Thẻ nổi bật nền tối trên Dashboard, hiển thị chỉ số năng suất đã được hook useDashboardData tính sẵn: nhãn mốc thời gian, số task hoàn thành trên tổng số và thanh tiến độ theo phần trăm.
  */
 
 import React from 'react';
@@ -9,7 +8,10 @@ import { ProductivityCardProps } from '../../types';
 import { TrendingUp, Clock } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Card hiển thị % năng suất tuần hiện tại */
+/**
+ * Render thẻ năng suất; chỉ hiển thị dữ liệu nhận từ props, không tự tính toán.
+ * @param stats Bộ số liệu năng suất gồm label, completed, total và percentage.
+ */
 export const ProductivityCard: React.FC<ProductivityCardProps> = ({ stats }) => {
   const { state } = useApp();
   const { t } = state;

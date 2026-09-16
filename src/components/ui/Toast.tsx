@@ -1,14 +1,17 @@
 /**
- * File: Toast.tsx
- * Trách nhiệm: Hệ thống toast thông báo (success/error/info) góc màn hình.
- * Liên quan: types/props.ts (ToastProps), useUIState.ts, App.tsx.
+ * File: components/ui/Toast.tsx
+ * Mục đích: Hệ thống thông báo nổi (toast) của SabTask. File này gồm container xếp các toast ở góc dưới phải màn hình và component toast đơn lẻ với ba loại thành công, lỗi và thông tin.
  */
 
 import React, { useEffect } from 'react';
 import { ToastProps } from '../../types';
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
 
-/** Container hiển thị danh sách toast ở góc dưới phải */
+/**
+ * Vùng chứa cố định ở góc dưới phải, render toàn bộ toast đang có trong danh sách.
+ * @param toasts Danh sách toast cần hiển thị.
+ * @param removeToast Hàm xoá một toast khỏi danh sách theo id.
+ */
 export const ToastContainer: React.FC<ToastProps> = ({ toasts, removeToast }) => {
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3">
@@ -19,10 +22,17 @@ export const ToastContainer: React.FC<ToastProps> = ({ toasts, removeToast }) =>
   );
 };
 
-/** Một toast đơn lẻ, tự ẩn sau 4 giây */
+/**
+ * Một toast đơn lẻ với màu sắc và icon theo loại thông báo, kèm nút đóng thủ công.
+ * @param id Mã toast, dùng làm phụ thuộc để hẹn lại thời gian tự ẩn.
+ * @param type Loại thông báo quyết định màu nền và icon.
+ * @param message Nội dung thông báo hiển thị cho người dùng.
+ * @param onRemove Callback yêu cầu gỡ toast này khỏi danh sách.
+ */
 const ToastItem: React.FC<{ id: string; type: 'success' | 'error' | 'info'; message: string; onRemove: () => void }> = ({
   id, type, message, onRemove 
 }) => {
+  /** Hẹn tự động gỡ toast sau 4 giây; chạy lại khi id hoặc onRemove đổi và huỷ timer khi unmount. */
   useEffect(() => {
     const timer = setTimeout(() => {
       onRemove();

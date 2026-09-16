@@ -1,7 +1,8 @@
 /**
- * File: ChatArea.tsx
- * Trách nhiệm: Vùng hiển thị tin nhắn text trong kênh chat.
- * Liên quan: TeamHub.tsx, types/models.ts (ChatMessage).
+ * File: components/team-hub/ChatArea.tsx
+ * Mục đích: Khu vực hiển thị dòng tin nhắn của một kênh chat chữ trong Team Hub.
+ * Component vẽ từng tin nhắn theo dạng bong bóng (phân biệt tin của mình, của thành viên khác và của trợ lý AI),
+ * hiển thị ảnh/tệp đính kèm, hiệu ứng "AI đang trả lời" và tự cuộn xuống tin nhắn mới nhất.
  */
 
 import React, { useEffect, useRef } from 'react';
@@ -15,14 +16,16 @@ interface ChatAreaProps {
     isAiThinking: boolean;
 }
 
-/** Khu vực scroll tin nhắn với auto-scroll xuống cuối */
+/** Component danh sách tin nhắn của kênh chat, kèm khả năng tự cuộn tới tin nhắn cuối. */
 export const ChatArea: React.FC<ChatAreaProps> = ({ messages, users, currentUser, isAiThinking }) => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    /** Cuộn mượt khung chat xuống điểm neo cuối danh sách để người dùng luôn thấy tin nhắn mới nhất. */
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    /** Tự cuộn xuống cuối mỗi khi có tin nhắn mới hoặc khi AI bắt đầu/kết thúc trả lời. Không cần cleanup. */
     useEffect(() => {
         scrollToBottom();
     }, [messages, isAiThinking]);
@@ -51,7 +54,6 @@ export const ChatArea: React.FC<ChatAreaProps> = ({ messages, users, currentUser
                                 ? 'bg-gradient-to-r from-primary-50 to-indigo-50 dark:from-primary-900/20 dark:to-indigo-900/20 text-slate-800 dark:text-slate-100 border border-primary-100 dark:border-primary-800/50 rounded-tl-none'
                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-none shadow-sm'
                             }`}>
-                                {/* Attachment Rendering */}
                                 {msg.attachment && (
                                 <div className="mb-2">
                                     {msg.attachment.type === 'image' ? (

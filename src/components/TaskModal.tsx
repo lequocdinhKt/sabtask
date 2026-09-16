@@ -1,7 +1,9 @@
 /**
- * File: TaskModal.tsx
- * Trách nhiệm: Modal tạo/sửa task — ghép header, tabs, form, footer.
- * Liên quan: useTaskForm.ts, task-modal/* sub-components.
+ * File: components/TaskModal.tsx
+ * Mục đích: Hộp thoại tạo mới hoặc sửa một task. File này chỉ đóng vai trò lắp ghép: lấy toàn bộ
+ * state và handler từ hook useTaskForm rồi truyền xuống các phần con (header, tab bar, nội dung tab
+ * details/subtasks/comments và footer), đồng thời xác định task đang mở có phải task đang được bấm
+ * timer hay không để header hiển thị đúng nút bắt đầu hoặc dừng.
  */
 
 import React from 'react';
@@ -9,7 +11,6 @@ import { TaskModalProps } from '../types';
 import { useTaskForm } from '../hooks/useTaskForm';
 import { useApp } from '../context/AppContext';
 
-// Sub Components
 import { TaskModalHeader } from './task-modal/TaskModalHeader';
 import { TaskModalTabs } from './task-modal/TaskModalTabs';
 import { TaskModalFooter } from './task-modal/TaskModalFooter';
@@ -17,7 +18,10 @@ import { TaskDetails } from './task-modal/TaskDetails';
 import { TaskSubtasks } from './task-modal/TaskSubtasks';
 import { TaskComments } from './task-modal/TaskComments';
 
-/** Modal task chính — details, subtasks, comments và timer */
+/**
+ * Component modal task: không render gì khi modal đóng, khi mở thì hiển thị lớp phủ cùng khung
+ * hộp thoại và chỉ render nội dung của tab đang được chọn.
+ */
 export const TaskModal: React.FC<TaskModalProps> = (props) => {
   const { state } = useApp();
   const { formState, uiState, handlers } = useTaskForm(props);
@@ -44,7 +48,6 @@ export const TaskModal: React.FC<TaskModalProps> = (props) => {
             commentsCount={formState.comments.length}
         />
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           {uiState.activeTab === 'details' && (
             <TaskDetails 

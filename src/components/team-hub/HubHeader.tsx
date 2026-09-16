@@ -1,7 +1,7 @@
 /**
- * File: HubHeader.tsx
- * Trách nhiệm: Header kênh đang chọn — tên, loại, nút join voice.
- * Liên quan: TeamHub.tsx, VoiceStage.tsx.
+ * File: components/team-hub/HubHeader.tsx
+ * Mục đích: Thanh header phía trên khung chat của Team Hub, hiển thị biểu tượng và tên kênh đang mở.
+ * Với kênh voice, header còn cung cấp nút tham gia hoặc rời phòng; trên mobile có thêm nút quay lại danh sách kênh.
  */
 
 import React from 'react';
@@ -16,13 +16,18 @@ interface HubHeaderProps {
     onBack: () => void;
 }
 
-/** Header hiển thị tên kênh và điều khiển voice room */
+/** Component header của kênh: hiển thị tên kênh, nút quay lại cho mobile và nút tham gia/rời phòng voice. */
 export const HubHeader: React.FC<HubHeaderProps> = ({
     activeChannel, isJoined, onToggleVoiceRoom, onBack 
 }) => {
     const { state } = useApp();
     const { t } = state;
 
+    /**
+     * Chọn biểu tượng tương ứng với loại kênh.
+     * @param type Loại kênh cần hiển thị.
+     * @returns Icon loa cho kênh voice, icon dấu thăng cho kênh chat chữ.
+     */
     const getChannelIcon = (type: Channel['type']) => {
         return type === 'VOICE' ? <Volume2 size={18} /> : <Hash size={18} />;
     };
@@ -30,7 +35,6 @@ export const HubHeader: React.FC<HubHeaderProps> = ({
     return (
         <div className="h-16 border-b border-slate-100 dark:border-white/5 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-dark-surface">
               <div className="flex items-center gap-3">
-                  {/* Mobile Back Button */}
                   <button 
                     onClick={onBack}
                     className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"

@@ -1,7 +1,8 @@
 /**
- * File: HeaderSearch.tsx
- * Trách nhiệm: Ô tìm kiếm toàn cục với dropdown kết quả (debounce 300ms).
- * Liên quan: useSearchSystem.ts, Header.tsx, AppContext.
+ * File: components/layout/header/HeaderSearch.tsx
+ * Mục đích: Ô tìm kiếm toàn cục trên header. Nhận từ khoá của người dùng, gọi tìm kiếm
+ * toàn hệ thống sau khoảng chờ 300ms và hiển thị dropdown kết quả gồm project, task,
+ * thành viên và comment để điều hướng nhanh tới đối tượng được chọn.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,7 +11,7 @@ import { Search, Folder, FileText, Users, MessageSquare } from 'lucide-react';
 import { Badge } from '../../ui/Badge';
 import { SearchResult } from '../../../types';
 
-/** Tìm kiếm global với debounce và dropdown kết quả */
+/** Component ô tìm kiếm toàn cục kèm dropdown hiển thị các kết quả khớp nhất. */
 export const HeaderSearch: React.FC = () => {
   const { state, actions } = useApp();
   const { t } = state;
@@ -18,8 +19,9 @@ export const HeaderSearch: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Click outside handler
+  /** Chạy một lần khi mount: lắng nghe mousedown toàn trang để ẩn dropdown, cleanup gỡ listener. */
   useEffect(() => {
+    /** Ẩn dropdown kết quả khi người dùng bấm chuột ra ngoài vùng tìm kiếm. */
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowResults(false);
@@ -29,7 +31,10 @@ export const HeaderSearch: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Debounce search
+  /**
+   * Chạy mỗi khi từ khoá thay đổi: chờ 300ms rồi gọi tìm kiếm toàn cục và mở dropdown,
+   * nếu từ khoá rỗng thì ẩn dropdown; cleanup huỷ timeout để tạo hiệu ứng debounce.
+   */
   useEffect(() => {
     const timer = setTimeout(() => {
       if (localSearchQuery) {
@@ -42,7 +47,11 @@ export const HeaderSearch: React.FC = () => {
     return () => clearTimeout(timer);
   }, [localSearchQuery]);
 
-  /** Trả icon tương ứng loại kết quả tìm kiếm */
+  /**
+   * Chọn icon minh hoạ cho một dòng kết quả tìm kiếm.
+   * @param type Loại kết quả: PROJECT, TASK, MEMBER hoặc COMMENT.
+   * @returns Phần tử icon tương ứng với loại kết quả.
+   */
   const getResultIcon = (type: SearchResult['type']) => {
      switch(type) {
        case 'PROJECT': return <Folder size={16} className="text-primary-500" />;

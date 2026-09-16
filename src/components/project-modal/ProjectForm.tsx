@@ -1,7 +1,8 @@
 /**
- * File: ProjectForm.tsx
- * Trách nhiệm: Form tạo/sửa project — tên, mô tả, status, members.
- * Liên quan: ProjectModal.tsx, useEntityOperations.ts.
+ * File: components/project-modal/ProjectForm.tsx
+ * Mục đích: Form nhập liệu bên trong modal dự án, cho phép nhập tên, mô tả, chọn trạng thái
+ * và chọn các thành viên tham gia dự án. Khi gửi form sẽ dựng đối tượng dự án hoàn chỉnh
+ * rồi chuyển lên hàm lưu ở tầng trên (tạo mới nếu chưa có dự án, cập nhật nếu đang sửa).
  */
 
 import React, { useState } from 'react';
@@ -10,7 +11,7 @@ import { Briefcase, FileText, Activity, Users } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 
-/** Form nhập thông tin project và chọn thành viên */
+/** Component form dự án: quản lý state nhập liệu và danh sách thành viên được chọn. */
 export const ProjectForm: React.FC<ProjectFormProps> = ({ project, users, onSave, onClose }) => {
   const { state } = useApp();
   const { t } = state;
@@ -19,7 +20,10 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, users, onSave
   const [status, setStatus] = useState<'ACTIVE' | 'ARCHIVED' | 'COMPLETED'>(project?.status || 'ACTIVE');
   const [selectedMembers, setSelectedMembers] = useState<string[]>(project?.members || []);
 
-  /** Bật/tắt member trong danh sách thành viên project */
+  /**
+   * Thêm hoặc bỏ một người dùng khỏi danh sách thành viên được chọn khi người dùng bấm vào thẻ.
+   * @param userId Id của người dùng vừa được bấm chọn.
+   */
   const handleToggleMember = (userId: string) => {
     if (selectedMembers.includes(userId)) {
       setSelectedMembers(prev => prev.filter(id => id !== userId));
@@ -28,7 +32,11 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ project, users, onSave
     }
   };
 
-  /** Submit form và gọi onSave với dữ liệu project */
+  /**
+   * Xử lý gửi form: chặn reload mặc định của trình duyệt, dựng đối tượng dự án từ các state
+   * nhập liệu (giữ nguyên id và tiến độ khi đang sửa, sinh id tạm khi tạo mới) rồi gọi hàm lưu.
+   * @param e Sự kiện submit của form.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newProject: Project = {

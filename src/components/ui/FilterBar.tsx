@@ -1,7 +1,6 @@
 /**
- * File: FilterBar.tsx
- * Trách nhiệm: Thanh lọc task theo tìm kiếm, ưu tiên và người phụ trách.
- * Liên quan: types/props.ts (FilterBarProps), KanbanBoard, TaskListView.
+ * File: components/ui/FilterBar.tsx
+ * Mục đích: Thanh bộ lọc dùng chung cho các view task, cho phép tìm theo từ khoá, lọc theo mức ưu tiên và theo người phụ trách. Component chỉ quản lý giao diện và cập nhật object filters cho component cha xử lý.
  */
 
 import React from 'react';
@@ -9,13 +8,18 @@ import { FilterBarProps, Priority } from '../../types';
 import { Search, Filter, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Thanh bộ lọc task với search, priority và assignee */
+/**
+ * Render ô tìm kiếm, hai dropdown lọc và nút xoá lọc (chỉ hiện khi đang có bộ lọc khác mặc định).
+ * @param filters Trạng thái lọc hiện tại gồm search, priority và assigneeId.
+ * @param setFilters Hàm cập nhật trạng thái lọc ở component cha.
+ * @param users Danh sách người dùng dùng để dựng các lựa chọn trong dropdown người phụ trách.
+ */
 export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, users }) => {
     const { state } = useApp();
     const { t } = state;
     const hasActiveFilters = filters.priority !== 'ALL' || filters.assigneeId !== 'ALL' || filters.search !== '';
 
-    /** Đặt lại tất cả bộ lọc về mặc định */
+    /** Đưa cả ba điều kiện lọc về giá trị mặc định để hiển thị lại toàn bộ task. */
     const clearFilters = () => {
         setFilters({ search: '', priority: 'ALL', assigneeId: 'ALL' });
     };
@@ -23,7 +27,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, users
     return (
         <div className="flex flex-col md:flex-row gap-3 mb-6 bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
 
-            {/* Search Input */}
             <div className="flex items-center flex-1 bg-slate-50 dark:bg-slate-900 rounded-xl px-3 py-2 border border-transparent focus-within:border-primary-500/50 focus-within:ring-2 focus-within:ring-primary-500/10 transition-all">
                 <Search size={16} className="text-slate-500 dark:text-slate-400 mr-2" />
                 <input
@@ -39,7 +42,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, users
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0">
-                {/* Priority Filter */}
                 <div className="relative group min-w-[120px]">
                     <Filter size={14} className="absolute left-3 top-3 text-slate-400 pointer-events-none" />
                     <select
@@ -52,7 +54,6 @@ export const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters, users
                     </select>
                 </div>
 
-                {/* Assignee Filter */}
                 <div className="relative group min-w-[140px]">
                     <select
                         value={filters.assigneeId}

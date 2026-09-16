@@ -1,11 +1,13 @@
 /**
- * File: demoUsers.ts
- * Trách nhiệm: UUID cố định + metadata demo (không chứa password).
- * Liên quan: seed-auth-users.mjs, supabase_schema.sql, TAI_KHOAN.md
+ * File: constants/demoUsers.ts
+ * Mục đích: Khai báo danh sách tài khoản demo của SabTask gồm UUID cố định và thông tin hồ sơ
+ * (tên, avatar, vai trò, email). Các UUID này khớp với dữ liệu seed trong Supabase nên được
+ * dùng lại ở seed script và dữ liệu mock; file không chứa mật khẩu hay khoá bí mật.
  */
 
 import { User } from '../types';
 
+/** UUID cố định của từng tài khoản demo, dùng để liên kết dữ liệu mock với bản ghi trong Supabase. */
 export const DEMO_USER_IDS = {
   admin: 'a1111111-1111-4111-8111-111111111111',
   sarah: 'a2222222-2222-4222-8222-222222222222',
@@ -14,7 +16,7 @@ export const DEMO_USER_IDS = {
   lan: 'a5555555-5555-4555-8555-555555555555',
 } as const;
 
-/** Placeholder trước khi session/profile load */
+/** Người dùng khách mặc định, dùng làm giá trị tạm khi phiên đăng nhập hoặc hồ sơ chưa tải xong. */
 export const GUEST_USER: User = {
   id: '',
   name: 'Guest',
@@ -22,6 +24,7 @@ export const GUEST_USER: User = {
   role: 'MEMBER',
 };
 
+/** Hồ sơ đầy đủ của các tài khoản demo, dùng để hiển thị danh sách thành viên và dữ liệu mẫu. */
 export const DEMO_USER_PROFILES: User[] = [
   {
     id: DEMO_USER_IDS.admin,

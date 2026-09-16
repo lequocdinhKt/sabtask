@@ -1,7 +1,8 @@
 /**
- * File: TaskSubtasks.tsx
- * Trách nhiệm: Danh sách subtask — thêm, sửa, xóa, gán người.
- * Liên quan: useTaskForm.ts, TaskModal.tsx.
+ * File: components/task-modal/TaskSubtasks.tsx
+ * Mục đích: Nội dung tab "Subtasks" trong modal task, hiển thị checklist các công việc con.
+ * Cho phép thêm subtask mới, tích/bỏ tích hoàn thành, sửa tiêu đề trực tiếp, chọn người thực hiện
+ * cho từng subtask và xóa subtask; mọi thay đổi được gửi lên modal cha qua các callback.
  */
 
 import React from 'react';
@@ -9,7 +10,10 @@ import { TaskSubtasksProps } from '../../types';
 import { Plus, CheckSquare, Trash2, User as UserIcon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Tab quản lý danh sách subtask */
+/**
+ * Component danh sách subtask: hiển thị trạng thái rỗng khi chưa có subtask nào, ngược lại
+ * render từng dòng subtask kèm các điều khiển tích hoàn thành, sửa tên, gán người và xóa.
+ */
 export const TaskSubtasks: React.FC<TaskSubtasksProps> = ({
   subtasks, users, onAdd, onUpdate, onDelete
 }) => {
@@ -50,7 +54,6 @@ export const TaskSubtasks: React.FC<TaskSubtasksProps> = ({
                  className={`flex-1 bg-transparent border-none outline-none text-sm ${st.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
                />
                
-               {/* Subtask Assignee Selector */}
                <div className="relative group/assignee">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center border ${assignedUser ? 'border-primary-200' : 'border-dashed border-slate-300 dark:border-slate-600'} overflow-hidden bg-white dark:bg-slate-800 cursor-pointer`}>
                       {assignedUser ? (

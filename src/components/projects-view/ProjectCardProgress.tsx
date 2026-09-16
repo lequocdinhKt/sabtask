@@ -1,13 +1,13 @@
 /**
- * File: ProjectCardProgress.tsx
- * Trách nhiệm: Thanh tiến độ % trên thẻ project.
- * Liên quan: ProjectsView.tsx.
+ * File: components/projects-view/ProjectCardProgress.tsx
+ * Mục đích: Hiển thị thanh tiến độ và phần trăm hoàn thành của một dự án trên thẻ dự án,
+ * đổi sang màu xanh khi dự án đã hoàn thành 100%.
  */
 
 import React from 'react';
 import { ProjectCardProgressProps } from '../../types';
 
-/** Thanh progress bar hiển thị % hoàn thành project */
+/** Component thanh tiến độ hiển thị phần trăm hoàn thành của dự án. */
 export const ProjectCardProgress: React.FC<ProjectCardProgressProps> = ({ progress }) => {
     return (
         <div>

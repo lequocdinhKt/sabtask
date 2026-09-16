@@ -1,7 +1,9 @@
 /**
- * File: NotificationsPanel.tsx
- * Trách nhiệm: Panel dropdown thông báo từ header.
- * Liên quan: notifications/*, useDataFetching, HeaderControls.
+ * File: components/NotificationsPanel.tsx
+ * Mục đích: Panel thông báo dạng dropdown mở từ biểu tượng chuông trên header. Panel lấy danh
+ * sách thông báo thật của người dùng hiện tại trong state chung (nguồn là bảng notifications
+ * của Supabase, được đồng bộ realtime), hiển thị trạng thái rỗng khi chưa có thông báo nào và
+ * ghép ba phần header, danh sách, footer cùng các hành động đánh dấu đã đọc.
  */
 
 import React from 'react';
@@ -12,7 +14,7 @@ import { NotificationsHeader } from './notifications/NotificationsHeader';
 import { NotificationsList } from './notifications/NotificationsList';
 import { NotificationsFooter } from './notifications/NotificationsFooter';
 
-/** Panel thông báo floating bên cạnh icon bell */
+/** Component panel thông báo: tính số thông báo chưa đọc và nối các hành động đánh dấu đã đọc, đóng panel. */
 export const NotificationsPanel: React.FC = () => {
   const { state, actions } = useApp();
   const { notifications } = state;
@@ -41,7 +43,7 @@ export const NotificationsPanel: React.FC = () => {
           onMarkRead={actions.markNotificationAsRead}
       />
       
-      <NotificationsFooter onViewAll={() => { /* Navigate to activity view if exists */ }} />
+      <NotificationsFooter onViewAll={() => { }} />
     </Card>
   );
 };

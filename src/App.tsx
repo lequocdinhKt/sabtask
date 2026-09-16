@@ -1,7 +1,8 @@
 /**
  * File: App.tsx
- * Trách nhiệm: Root layout — cổng đăng nhập và khung Sidebar/Header/Views khi đã auth.
- * Liên quan: AppContext, LoginScreen, Sidebar, Header, ViewManager, ModalManager.
+ * Mục đích: Component gốc của SabTask, chịu trách nhiệm quyết định hiển thị màn hình
+ * đăng nhập hay bộ khung giao diện chính (Sidebar, Header, vùng nội dung, modal, toast)
+ * dựa trên trạng thái xác thực lấy từ AppContext.
  */
 
 import { Sidebar } from './components/layout/Sidebar';
@@ -14,7 +15,11 @@ import { AppProvider, useApp } from './context/AppContext';
 import { ToastContainer } from './components/ui/Toast';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
-/** Layout chính: chờ Auth restore, rồi Login hoặc app shell */
+/**
+ * Khung giao diện chính: hiển thị trạng thái chờ khi phiên đăng nhập chưa khôi phục xong,
+ * hiển thị LoginScreen nếu chưa đăng nhập, ngược lại dựng layout Sidebar + Header + ViewManager
+ * kèm panel thông báo, modal và toast.
+ */
 const AppLayout = () => {
   const { state, actions } = useApp();
 
@@ -70,7 +75,7 @@ const AppLayout = () => {
   );
 };
 
-/** Entry component bọc AppProvider */
+/** Component được export mặc định, bọc AppLayout trong AppProvider để cấp state/actions toàn cục. */
 export default function App() {
   return (
     <AppProvider>

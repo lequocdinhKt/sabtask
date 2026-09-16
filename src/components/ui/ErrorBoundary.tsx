@@ -1,7 +1,6 @@
 /**
- * File: ErrorBoundary.tsx
- * Trách nhiệm: Bắt lỗi render React và hiển thị màn hình fallback.
- * Liên quan: types/props.ts, main.tsx/App.tsx bọc ErrorBoundary.
+ * File: components/ui/ErrorBoundary.tsx
+ * Mục đích: Error boundary bao ngoài cây component của ứng dụng. Khi một component con throw lỗi trong lúc render, file này chặn lỗi để tránh trắng trang và hiển thị màn hình thông báo kèm nút tải lại ứng dụng.
  */
 
 import React, { ErrorInfo, ReactNode } from 'react';
@@ -9,8 +8,9 @@ import { AlertTriangle, RefreshCcw } from 'lucide-react';
 import { Button } from './Button';
 import { ErrorBoundaryProps, ErrorBoundaryState } from '../../types';
 
-/** Error boundary class component — bắt lỗi con và hiện UI reload */
+/** Class component đóng vai trò error boundary: theo dõi trạng thái lỗi và quyết định render nội dung con hay màn hình fallback. */
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  /** Khởi tạo state ban đầu với trạng thái chưa có lỗi. */
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -19,19 +19,33 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     };
   }
 
+  /**
+   * Được React gọi khi component con throw lỗi, dùng để chuyển state sang chế độ hiển thị fallback.
+   * @param error Lỗi mà component con throw ra.
+   * @returns State mới đánh dấu đã có lỗi kèm chính lỗi đó.
+   */
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
   }
 
+  /**
+   * Ghi log lỗi ra console sau khi boundary bắt được, phục vụ việc gỡ lỗi.
+   * @param error Lỗi đã xảy ra.
+   * @param errorInfo Thông tin bổ sung của React về cây component gây lỗi.
+   */
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  /** Tải lại trang khi người dùng bấm nút reload */
+  /** Tải lại toàn bộ trang để người dùng thoát khỏi trạng thái lỗi. */
   handleReload = () => {
     window.location.reload();
   };
 
+  /**
+   * Hiển thị màn hình fallback kèm thông điệp lỗi và nút tải lại nếu đã bắt được lỗi, ngược lại render nội dung con như bình thường.
+   * @returns Màn hình fallback hoặc children của boundary.
+   */
   render(): ReactNode {
     if (this.state.hasError) {
       return (

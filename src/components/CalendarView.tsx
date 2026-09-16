@@ -1,7 +1,8 @@
 /**
- * File: CalendarView.tsx
- * Trách nhiệm: Lịch task theo ngày/tuần/tháng với điều hướng thời gian.
- * Liên quan: date-fns, types/props.ts (CalendarViewProps), TaskModal.
+ * File: components/CalendarView.tsx
+ * Mục đích: Hiển thị công việc trên lịch theo ba chế độ tháng/tuần/ngày, dựa trên deadline
+ * của từng task. Cho phép điều hướng qua lại giữa các kỳ thời gian, quay về hôm nay và
+ * bấm vào một task để mở modal chỉnh sửa.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -15,53 +16,60 @@ import {
   startOfDay, setHours, getHours, getMinutes
 } from 'date-fns';
 
-/** View lịch hiển thị task theo ngày/tuần/tháng */
+/** Component chính của trang Calendar: thanh điều khiển thời gian và lưới lịch tháng/tuần/ngày. */
 export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask }) => {
   const { state } = useApp();
   const { users } = state;
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('month');
 
-  // Navigation Handlers
-  /** Lùi về kỳ trước theo chế độ xem hiện tại */
+  /** Lùi về kỳ trước (tháng, tuần hoặc ngày) tuỳ chế độ xem đang bật. */
   const handlePrev = () => {
     if (viewMode === 'month') setCurrentDate(subMonths(currentDate, 1));
     else if (viewMode === 'week') setCurrentDate(subWeeks(currentDate, 1));
     else setCurrentDate(addDays(currentDate, -1));
   };
   
-  /** Tiến tới kỳ sau theo chế độ xem hiện tại */
+  /** Tiến tới kỳ sau (tháng, tuần hoặc ngày) tuỳ chế độ xem đang bật. */
   const handleNext = () => {
     if (viewMode === 'month') setCurrentDate(addMonths(currentDate, 1));
     else if (viewMode === 'week') setCurrentDate(addWeeks(currentDate, 1));
     else setCurrentDate(addDays(currentDate, 1));
   };
 
-  /** Quay về ngày hôm nay */
+  /** Đưa lịch trở về ngày hiện tại. */
   const handleToday = () => setCurrentDate(new Date());
 
-  // Date Logic
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
 
+  /** Tính danh sách ngày lấp kín lưới tháng (kể cả ngày bù của tháng trước/sau); tính lại khi currentDate đổi. */
   const monthDays = useMemo(() => {
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
   }, [currentDate]);
 
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 1 });
+  /** Tính 7 ngày của tuần chứa currentDate (bắt đầu từ thứ Hai); tính lại khi currentDate đổi. */
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   }, [currentDate]);
 
   const hours = Array.from({ length: 24 }, (_, i) => i); 
 
-  // Helpers
+  /** Lọc ra các task có deadline rơi vào đúng ngày được truyền vào. */
   const getTasksForDay = (date: Date) => {
     return tasks.filter(task => isSameDay(new Date(task.dueDate), date));
   };
 
+  /**
+   * Lọc task theo đúng ngày và đúng khung giờ, dùng cho ô thời gian của lưới tuần.
+   * Hiện chưa được gọi ở phần render nào trong file.
+   * @param day Ngày cần lọc.
+   * @param hour Giờ trong ngày (0-23) của khung thời gian.
+   * @returns Danh sách task có deadline khớp cả ngày và giờ.
+   */
   const getTasksForSlot = (day: Date, hour: number) => {
     return tasks.filter(task => {
         const d = new Date(task.dueDate);
@@ -69,6 +77,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
     });
   };
 
+  /** Trả về bộ class Tailwind (nền, chữ, viền) tương ứng mức ưu tiên để tô màu thẻ task trên lịch. */
   const getPriorityStyle = (p: Priority) => {
       switch(p) {
           case Priority.HIGH: return 'bg-rose-50 text-rose-700 border-rose-500 dark:bg-rose-900/30 dark:text-rose-200';
@@ -77,6 +86,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
       }
   };
 
+  /** Chuyển chuỗi ngày của deadline thành giờ ngắn gọn dạng HH:mm để hiển thị trong ô lịch tháng. */
   const formatTimeShort = (dateString: string) => {
       const d = new Date(dateString);
       return format(d, 'HH:mm');
@@ -85,7 +95,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
   return (
     <div className="flex flex-col bg-white dark:bg-dark-surface rounded-xl shadow-sm border border-slate-200 dark:border-white/5 font-sans h-full min-h-[600px]">
       
-      {/* 1. Header Section */}
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 space-y-6 flex-shrink-0">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
@@ -109,7 +118,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-               {/* View Controls */}
                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                     <button 
                         onClick={() => setViewMode('month')}
@@ -131,7 +139,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                     </button>
                </div>
 
-               {/* Date Navigation */}
                <div className="flex items-center gap-2">
                     <button onClick={handlePrev} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
                         <ChevronLeft size={20} />
@@ -149,20 +156,16 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
           </div>
       </div>
 
-      {/* 2. Grid Views */}
       <div className="flex-1 overflow-auto custom-scrollbar bg-slate-50 dark:bg-slate-900/50 rounded-b-xl relative">
           
-          {/* MONTH VIEW */}
           {viewMode === 'month' && (
               <div className="grid grid-cols-7 min-w-[800px] h-full auto-rows-fr bg-white dark:bg-dark-surface border-l border-slate-200 dark:border-slate-800">
-                  {/* Days Header */}
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                       <div key={day} className="py-2 text-center text-xs font-bold text-slate-400 uppercase border-b border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/20">
                           {day}
                       </div>
                   ))}
                   
-                  {/* Calendar Grid */}
                   {monthDays.map((day, i) => {
                       const dayTasks = getTasksForDay(day);
                       const isCurrMonth = isSameMonth(day, currentDate);
@@ -174,7 +177,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                                 ${!isCurrMonth ? 'bg-slate-50/50 dark:bg-slate-900/30' : 'bg-white dark:bg-dark-surface'}
                                 hover:bg-slate-50 dark:hover:bg-slate-800/10
                               `}
-                              onClick={() => {/* Open day view or add task */}}
+                              onClick={() => {}}
                           >
                               <div className="flex justify-between items-start mb-1">
                                   <span className={`
@@ -206,7 +209,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
               </div>
           )}
 
-          {/* WEEK VIEW */}
           {viewMode === 'week' && (
               <div className="min-w-[800px] bg-white dark:bg-dark-surface relative">
                    <div className="grid grid-cols-[60px_1fr] sticky top-0 z-20 bg-white dark:bg-dark-surface border-b border-slate-200 dark:border-slate-800 shadow-sm">
@@ -224,7 +226,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                    </div>
                    
                    <div className="grid grid-cols-[60px_1fr]">
-                       {/* Time Labels */}
                        <div className="border-r border-slate-200 dark:border-slate-800">
                            {hours.map(hour => (
                                <div key={hour} className="h-20 border-b border-slate-100 dark:border-slate-800/50 flex items-start justify-center pt-2">
@@ -233,16 +234,13 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                            ))}
                        </div>
                        
-                       {/* Week Grid Body */}
                        <div className="grid grid-cols-7 relative">
-                           {/* Render Horizontal Guidelines */}
                            {hours.map(hour => (
                                <div key={`guide-${hour}`} className="absolute w-full border-b border-slate-100 dark:border-slate-800/50 h-20 pointer-events-none" style={{ top: hour * 80 }} />
                            ))}
 
                            {weekDays.map(day => (
                                <div key={day.toISOString()} className="relative h-[1920px] border-r border-slate-100 dark:border-slate-800/50">
-                                   {/* Tasks for this day */}
                                    {getTasksForDay(day).map(task => {
                                        const taskDate = new Date(task.dueDate);
                                        const startHour = getHours(taskDate);
@@ -254,7 +252,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                                                 key={task.id}
                                                 onClick={(e) => { e.stopPropagation(); onEditTask(task); }}
                                                 className={`absolute left-1 right-1 p-2 rounded-md border-l-2 text-xs cursor-pointer hover:z-10 hover:scale-[1.02] shadow-sm transition-all ${getPriorityStyle(task.priority)}`}
-                                                style={{ top: `${top}px`, height: '70px' }} // Fixed height for simplicity in this demo
+                                                style={{ top: `${top}px`, height: '70px' }}
                                            >
                                                 <div className="font-bold truncate">{task.title}</div>
                                                 <div className="opacity-80 flex items-center gap-1 mt-0.5">
@@ -264,7 +262,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                                        )
                                    })}
                                    
-                                   {/* Current Time Indicator */}
                                    {isToday(day) && (
                                        <div 
                                           className="absolute w-full border-t-2 border-rose-500 z-10 pointer-events-none flex items-center"
@@ -280,7 +277,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
               </div>
           )}
 
-           {/* DAY VIEW (Simple Reuse of Week Structure Logic) */}
            {viewMode === 'day' && (
                <div className="min-w-full bg-white dark:bg-dark-surface relative">
                    <div className="grid grid-cols-[60px_1fr]">
@@ -316,7 +312,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({ tasks, onEditTask })
                                    </div>
                                )
                            })}
-                           {/* Current Time */}
                            {isToday(currentDate) && (
                                <div 
                                   className="absolute w-full border-t-2 border-rose-500 z-10 pointer-events-none"

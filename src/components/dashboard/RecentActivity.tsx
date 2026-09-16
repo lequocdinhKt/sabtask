@@ -1,7 +1,6 @@
 /**
- * File: RecentActivity.tsx
- * Trách nhiệm: Danh sách task hoạt động gần đây trên dashboard.
- * Liên quan: Dashboard.tsx, types/props.ts (RecentActivityProps).
+ * File: components/dashboard/RecentActivity.tsx
+ * Mục đích: Khối "task gần đây" ở cuối trang Dashboard. Hiển thị tối đa 4 task đầu của danh sách truyền vào kèm icon theo mức ưu tiên, ngày đến hạn và badge trạng thái; nếu không có task thì hiện thông báo rỗng.
  */
 
 import React from 'react';
@@ -12,7 +11,11 @@ import { Badge } from '../ui/Badge';
 import { TrendingUp, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Widget hiển thị các task cập nhật gần đây */
+/**
+ * Render danh sách 4 task đầu tiên của mảng tasks kèm nút mở danh sách đầy đủ.
+ * @param tasks Danh sách task nguồn, component chỉ lấy 4 phần tử đầu.
+ * @param onViewAll Callback chạy khi bấm "xem tất cả" để chuyển sang view danh sách task.
+ */
 export const RecentActivity: React.FC<RecentActivityProps> = ({ tasks, onViewAll }) => {
   const { state } = useApp();
   const { t } = state;

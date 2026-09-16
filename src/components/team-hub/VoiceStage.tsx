@@ -1,7 +1,8 @@
 /**
- * File: VoiceStage.tsx
- * Trách nhiệm: Sân khấu voice room — avatar thành viên đang tham gia.
- * Liên quan: TeamHub.tsx, VoiceControls.tsx.
+ * File: components/team-hub/VoiceStage.tsx
+ * Mục đích: Khu vực chính của phòng voice trong Team Hub, hiển thị lưới avatar những người đang tham gia kèm dấu hiệu bật/tắt micro.
+ * Khi phòng chưa có ai, component hiện trạng thái rỗng cùng nút tham gia.
+ * Toàn bộ hiệu ứng "đang nói" chỉ là mô phỏng giao diện vì tính năng voice chưa có kết nối WebRTC thật.
  */
 
 import React from 'react';
@@ -18,7 +19,7 @@ interface VoiceStageProps {
     onJoin: () => void;
 }
 
-/** Sân khấu hiển thị người tham gia voice channel */
+/** Component sân khấu phòng voice: hiện trạng thái phòng rỗng kèm nút tham gia, hoặc lưới avatar các thành viên đang trong phòng. */
 export const VoiceStage: React.FC<VoiceStageProps> = ({
     channel, users, currentUser, isJoined, isMuted, onJoin 
 }) => {
@@ -55,13 +56,11 @@ export const VoiceStage: React.FC<VoiceStageProps> = ({
                         <div key={uid} className="relative aspect-square">
                             <div className={`w-full h-full rounded-3xl overflow-hidden border-4 relative ${isUserMe && !isMuted ? 'border-emerald-500 shadow-glow' : 'border-white dark:border-slate-700 shadow-xl'}`}>
                                 <img src={u?.avatar} className="w-full h-full object-cover" />
-                                {/* Status Indicators */}
                                 <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-md text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1.5 max-w-[85%]">
                                     {isUserMe && isMuted ? <MicOff size={12} className="text-rose-400 flex-shrink-0" /> : <Mic size={12} className="text-emerald-400 flex-shrink-0" />}
                                     <span className="truncate">{u?.name} {isUserMe && '(You)'}</span>
                                 </div>
                             </div>
-                            {/* Speaking ring animation simulation */}
                             {isUserMe && !isMuted && (
                                 <div className="absolute inset-0 rounded-3xl border-4 border-emerald-500 animate-ping opacity-20 pointer-events-none"></div>
                             )}

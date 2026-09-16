@@ -1,14 +1,14 @@
 /**
- * File: ProjectCardFooter.tsx
- * Trách nhiệm: Footer thẻ project — avatar members và đếm task.
- * Liên quan: ProjectsView.tsx.
+ * File: components/projects-view/ProjectCardFooter.tsx
+ * Mục đích: Phần chân của thẻ dự án, hiển thị avatar tối đa 4 thành viên (kèm chỉ báo số
+ * thành viên còn lại) và tỉ lệ task đã hoàn thành trên tổng số task của dự án.
  */
 
 import React from 'react';
 import { ProjectCardFooterProps } from '../../types';
 import { CheckCircle2 } from 'lucide-react';
 
-/** Footer card hiển thị members và số task hoàn thành */
+/** Component chân thẻ dự án: hiển thị avatar thành viên và số task đã hoàn thành trên tổng số task. */
 export const ProjectCardFooter: React.FC<ProjectCardFooterProps> = ({ members, completedTasks, totalTasks }) => {
     return (
         <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">

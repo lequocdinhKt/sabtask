@@ -1,7 +1,8 @@
 /**
- * File: useTaskForm.ts
- * Trách nhiệm: Hook quản lý form task (state, subtask, comment, AI, timer).
- * Liên quan: TaskModal.tsx, groqService.ts, AppContext.tsx.
+ * File: hooks/useTaskForm.ts
+ * Mục đích: Custom hook quản lý toàn bộ trạng thái của form tạo/sửa task dùng trong TaskModal.
+ * Hook nạp dữ liệu khi modal mở, giữ giá trị các trường nhập, quản lý danh sách subtask và comment ở phía client,
+ * gọi AI (Groq) để gợi ý subtask cùng mức ưu tiên, và điều khiển timer đo thời gian làm task qua AppContext.
  */
 
 import React, { useState, useEffect } from 'react';
@@ -9,13 +10,16 @@ import { Task, Priority, TaskStatus, Subtask, Comment, UseTaskFormProps } from '
 import { generateSubtasks, suggestPriority } from '../services/groqService';
 import { useApp } from '../context/AppContext';
 
-/** Hook form task: khởi tạo state, xử lý lưu/xóa/subtask/comment/AI */
+/**
+ * Hook cung cấp state và các handler cho form task.
+ * @param props Thông tin đầu vào của form: cờ mở modal, task đang sửa (nếu có), user hiện tại, danh sách project, trạng thái mặc định và các callback lưu/xóa/đóng.
+ * @returns Object gồm formState (giá trị và setter của từng trường), uiState (tab đang mở, cờ đang gọi AI) và handlers (các hàm xử lý sự kiện).
+ */
 export const useTaskForm = ({
   isOpen, task, currentUser, projects, defaultStatus, onSave, onDelete, onClose 
 }: UseTaskFormProps) => {
   const { actions } = useApp();
   
-  // Form State
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>(TaskStatus.TODO);
@@ -24,16 +28,19 @@ export const useTaskForm = ({
   const [assigneeId, setAssigneeId] = useState('');
   const [dueDate, setDueDate] = useState('');
   
-  // Complex State
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   
-  // UI State
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'subtasks' | 'comments'>('details');
 
-  // Initialization Effect
+  /**
+   * Khởi tạo lại toàn bộ form mỗi khi modal được mở hoặc task/danh sách project thay đổi:
+   * nạp dữ liệu từ task đang sửa, hoặc điền giá trị mặc định cho task mới (project đầu tiên,
+   * người thực hiện là user hiện tại, hạn là hôm nay), sau đó reset tab về "details" và xóa ô nhập comment.
+   * Effect này không cần cleanup.
+   */
   useEffect(() => {
     if (isOpen) {
       if (task) {
@@ -47,7 +54,6 @@ export const useTaskForm = ({
         setSubtasks(task.subtasks || []);
         setComments(task.comments || []);
       } else {
-        // Defaults for new task
         setTitle('');
         setDescription('');
         setStatus(defaultStatus || TaskStatus.TODO);
@@ -63,8 +69,7 @@ export const useTaskForm = ({
     }
   }, [isOpen, task, defaultStatus, projects, currentUser]);
 
-  // Handlers
-  /** Gom dữ liệu form và gọi onSave */
+  /** Gom toàn bộ giá trị đang nhập thành một object Task rồi gửi ra ngoài qua callback onSave để lưu. */
   const handleSubmit = () => {
     const updatedTask: Task = {
       id: task?.id || Math.random().toString(36).substr(2, 9),
@@ -83,27 +88,33 @@ export const useTaskForm = ({
     onSave(updatedTask);
   };
 
-  /** Xác nhận và gọi onDelete nếu đang sửa task */
+  /** Hỏi xác nhận người dùng rồi gọi onDelete để xóa task đang sửa. */
   const handleDelete = () => {
     if (task && onDelete && window.confirm("Are you sure you want to delete this task?")) {
       onDelete(task.id);
     }
   };
 
-  // Subtask Handlers
+  /** Thêm một subtask trống vào danh sách để người dùng đặt lại tên. */
   const addSubtask = () => {
     setSubtasks([...subtasks, { id: Math.random().toString(), title: 'New Subtask', completed: false }]);
   };
 
+  /**
+   * Cập nhật một phần thông tin của subtask trong danh sách.
+   * @param id Mã subtask cần sửa.
+   * @param updates Các trường cần ghi đè, ví dụ tiêu đề hoặc trạng thái hoàn thành.
+   */
   const updateSubtask = (id: string, updates: Partial<Subtask>) => {
     setSubtasks(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
   };
 
+  /** Xóa một subtask khỏi danh sách theo mã. */
   const deleteSubtask = (id: string) => {
     setSubtasks(prev => prev.filter(s => s.id !== id));
   };
 
-  // Comment Handlers
+  /** Tạo comment mới từ nội dung đang nhập và thêm vào danh sách comment của form. */
   const addComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
@@ -117,8 +128,7 @@ export const useTaskForm = ({
     setNewComment('');
   };
 
-  // AI Handlers
-  /** Gọi Gemini tạo subtask và chuyển tab subtasks */
+  /** Nhờ AI (Groq) sinh danh sách subtask từ tiêu đề và mô tả task, thêm kết quả vào form rồi chuyển sang tab subtasks. */
   const handleAISubtasks = async () => {
     if (!title) return;
     setIsGenerating(true);
@@ -138,7 +148,7 @@ export const useTaskForm = ({
     }
   };
 
-  /** Gọi Gemini gợi ý mức ưu tiên từ tiêu đề */
+  /** Nhờ AI (Groq) phân tích tiêu đề task để gợi ý mức ưu tiên và điền sẵn vào form. */
   const handleAIPriority = async () => {
     if (!title) return;
     setIsGenerating(true);
@@ -152,10 +162,12 @@ export const useTaskForm = ({
     }
   };
 
+  /** Bắt đầu đếm thời gian làm việc cho task đang mở thông qua action toàn cục. */
   const handleStartTimer = () => {
     if (task) actions.handleStartTimer(task.id);
   };
 
+  /** Dừng timer đang chạy và ghi lại phiên làm việc thông qua action toàn cục. */
   const handleStopTimer = () => {
     actions.handleStopTimer();
   };

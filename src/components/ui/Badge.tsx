@@ -1,14 +1,18 @@
 /**
- * File: Badge.tsx
- * Trách nhiệm: Nhãn nhỏ hiển thị trạng thái/mức độ (primary, success, danger, ...).
- * Liên quan: types/props.ts (BadgeProps), KanbanBoard, TaskListView.
+ * File: components/ui/Badge.tsx
+ * Mục đích: Component nhãn (badge) dùng chung cho toàn hệ thống, hiển thị trạng thái task, mức ưu tiên hoặc vai trò thành viên theo bộ màu định sẵn cho cả chế độ sáng và tối.
  */
 
 import React from 'react';
 import { twMerge } from 'tailwind-merge';
 import { BadgeProps } from '../../types';
 
-/** Nhãn badge với variant màu tương ứng */
+/**
+ * Render một nhãn inline với bộ màu ứng theo variant, cho phép ghi đè class bằng tailwind-merge.
+ * @param children Nội dung hiển thị trong nhãn.
+ * @param variant Kiểu màu của nhãn, mặc định là 'neutral'.
+ * @param className Class Tailwind bổ sung, sẽ được merge và ưu tiên hơn class mặc định.
+ */
 export const Badge: React.FC<BadgeProps> = ({ children, variant = 'neutral', className }) => {
     const variants = {
         primary: 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-500/10 dark:text-primary-400 dark:border-primary-800',

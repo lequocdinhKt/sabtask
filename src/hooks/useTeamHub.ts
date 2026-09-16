@@ -1,13 +1,19 @@
 /**
- * File: useTeamHub.ts
- * Trách nhiệm: Fetch/persist channels + messages qua Supabase + Realtime.
- * Liên quan: TeamHub.tsx, supabase_schema.sql (channels, messages).
+ * File: hooks/useTeamHub.ts
+ * Mục đích: Custom hook cung cấp dữ liệu và nghiệp vụ cho màn Team Hub.
+ * Hook tải danh sách kênh cùng tin nhắn từ Supabase, lắng nghe Realtime để đồng bộ thay đổi giữa các người dùng,
+ * và cho phép gửi tin nhắn (kèm tin nhắn AI), tạo/xóa kênh, cập nhật trạng thái tham gia voice ở phía client.
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { Channel, ChatMessage, User } from '../types';
 
+/**
+ * Chuyển một dòng bảng `channels` của Supabase thành đối tượng Channel dùng trong UI.
+ * @param row Dữ liệu thô lấy từ database.
+ * @returns Channel với danh sách người đang ở voice để trống, vì trạng thái này chỉ quản lý ở client.
+ */
 const mapChannel = (row: Record<string, unknown>): Channel => ({
   id: String(row.id),
   name: String(row.name),
@@ -15,6 +21,11 @@ const mapChannel = (row: Record<string, unknown>): Channel => ({
   connectedUserIds: [],
 });
 
+/**
+ * Chuyển một dòng bảng `messages` của Supabase thành đối tượng ChatMessage dùng trong UI.
+ * @param row Dữ liệu thô lấy từ database.
+ * @returns ChatMessage đã chuẩn hóa tên trường, gán userId là 'ai' cho tin nhắn của bot và dựng lại thông tin tệp đính kèm nếu có.
+ */
 const mapMessage = (row: Record<string, unknown>): ChatMessage => ({
   id: String(row.id),
   channelId: String(row.channel_id),
@@ -32,11 +43,18 @@ const mapMessage = (row: Record<string, unknown>): ChatMessage => ({
       : undefined,
 });
 
+/**
+ * Hook quản lý state và các thao tác của Team Hub.
+ * @param isAuth Cờ cho biết người dùng đã đăng nhập; nếu chưa thì không truy vấn và không lắng nghe Realtime.
+ * @param user Người dùng hiện tại, dùng làm tác giả của tin nhắn và kênh được tạo.
+ * @returns Danh sách kênh, tin nhắn, cờ loading và các hàm gửi tin nhắn, tạo/xóa kênh, cập nhật voice, tải lại dữ liệu.
+ */
 export const useTeamHub = (isAuth: boolean, user: User) => {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
 
+  /** Tải song song toàn bộ kênh và tin nhắn từ Supabase theo thứ tự thời gian tạo, dùng cho lần khởi tạo và khi cần refetch. */
   const fetchAll = useCallback(async () => {
     if (!isAuth) return;
     setLoading(true);
@@ -54,10 +72,16 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     }
   }, [isAuth]);
 
+  /** Nạp dữ liệu Team Hub ngay khi hook được dùng và mỗi khi hàm fetchAll thay đổi (tức khi trạng thái đăng nhập đổi). */
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
+  /**
+   * Đăng ký kênh Realtime của Supabase để đồng bộ dữ liệu khi người dùng khác thao tác:
+   * thêm/sửa/xóa kênh và thêm/xóa tin nhắn đều được cập nhật trực tiếp vào state (có kiểm tra trùng id).
+   * Chỉ chạy khi đã đăng nhập; khi unmount hoặc trạng thái đăng nhập đổi thì hủy đăng ký kênh Realtime.
+   */
   useEffect(() => {
     if (!isAuth) return;
 
@@ -90,6 +114,14 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     };
   }, [isAuth]);
 
+  /**
+   * Gửi tin nhắn của người dùng hiện tại vào một kênh theo cơ chế optimistic update:
+   * hiển thị ngay trên UI rồi mới ghi xuống bảng `messages`, nếu lỗi thì gỡ tin nhắn vừa thêm.
+   * @param channelId Kênh nhận tin nhắn.
+   * @param text Nội dung tin nhắn.
+   * @param attachment Tệp hoặc ảnh đính kèm (không bắt buộc).
+   * @returns Tin nhắn đã gửi, hoặc null nếu ghi database thất bại.
+   */
   const sendMessage = async (
     channelId: string,
     text: string,
@@ -127,6 +159,12 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     return optimistic;
   };
 
+  /**
+   * Thêm câu trả lời của trợ lý AI vào kênh: hiện ngay trên UI rồi lưu vào bảng `messages` với cờ is_ai,
+   * user_id vẫn là người đang đăng nhập để thỏa ràng buộc dữ liệu. Nếu lưu lỗi thì gỡ tin nhắn khỏi UI.
+   * @param channelId Kênh nhận câu trả lời.
+   * @param text Nội dung do AI sinh ra.
+   */
   const sendAiMessage = async (channelId: string, text: string): Promise<void> => {
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
@@ -154,6 +192,12 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     }
   };
 
+  /**
+   * Tạo kênh chat mới trong database và thêm vào danh sách đang hiển thị.
+   * @param name Tên kênh.
+   * @param type Loại kênh: TEXT (chat chữ) hoặc VOICE (phòng thoại).
+   * @returns Kênh vừa tạo, hoặc null nếu ghi database thất bại.
+   */
   const createChannel = async (name: string, type: 'TEXT' | 'VOICE'): Promise<Channel | null> => {
     const id = crypto.randomUUID();
     const channel: Channel = { id, name, type, connectedUserIds: [] };
@@ -171,6 +215,11 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     return channel;
   };
 
+  /**
+   * Xóa một kênh khỏi database, đồng thời loại kênh đó và mọi tin nhắn của nó khỏi state.
+   * @param id Mã kênh cần xóa.
+   * @returns true nếu xóa thành công, false nếu database báo lỗi.
+   */
   const deleteChannel = async (id: string): Promise<boolean> => {
     const { error } = await supabase.from('channels').delete().eq('id', id);
     if (error) {
@@ -182,6 +231,12 @@ export const useTeamHub = (isAuth: boolean, user: User) => {
     return true;
   };
 
+  /**
+   * Cập nhật trạng thái tham gia phòng voice của chính người dùng hiện tại, đảm bảo mỗi lúc chỉ ở trong một kênh voice.
+   * Trạng thái này chỉ lưu trong state ở máy người dùng (chưa đồng bộ qua database hay WebRTC), nên các thành viên khác không thấy được.
+   * @param channelId Kênh voice liên quan.
+   * @param connected true khi tham gia, false khi rời phòng.
+   */
   const setVoiceConnectedLocal = (channelId: string, connected: boolean) => {
     setChannels((prev) =>
       prev.map((c) => {

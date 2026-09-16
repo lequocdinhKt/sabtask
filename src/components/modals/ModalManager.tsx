@@ -1,7 +1,8 @@
 /**
- * File: ModalManager.tsx
- * Trách nhiệm: Quản lý và render tất cả modal (task, profile, member, project).
- * Liên quan: AppContext, TaskModal, ProfileModal, MemberModal, ProjectModal.
+ * File: components/modals/ModalManager.tsx
+ * Mục đích: Nơi tập trung khai báo toàn bộ modal của ứng dụng (task, hồ sơ cá nhân,
+ * thành viên, project). File này lấy trạng thái đóng/mở và dữ liệu đang chỉnh sửa từ
+ * context rồi truyền xuống từng modal, giúp các view không phải tự quản lý modal.
  */
 
 import React from 'react';
@@ -11,7 +12,7 @@ import { ProfileModal } from '../ProfileModal';
 import { MemberModal } from '../MemberModal';
 import { ProjectModal } from '../ProjectModal';
 
-/** Render có điều kiện các modal từ state context */
+/** Component gắn kết trạng thái modal trong context với các component modal tương ứng. */
 export const ModalManager: React.FC = () => {
   const { state, actions } = useApp();
 

@@ -1,7 +1,7 @@
 /**
- * File: VoiceControls.tsx
- * Trách nhiệm: Nút điều khiển voice — mute, video, rời phòng.
- * Liên quan: VoiceStage.tsx, TeamHub.tsx.
+ * File: components/team-hub/VoiceControls.tsx
+ * Mục đích: Thanh nút điều khiển hiển thị bên dưới phòng voice của Team Hub, gồm bật/tắt micro, bật/tắt camera và rời phòng.
+ * Đây là component thuần giao diện: nó chỉ đổi trạng thái ở phía client và gọi callback, chưa điều khiển thiết bị thật vì tính năng voice chưa tích hợp WebRTC.
  */
 
 import React from 'react';
@@ -15,7 +15,7 @@ interface VoiceControlsProps {
     onLeave: () => void;
 }
 
-/** Thanh điều khiển mic, camera và rời voice room */
+/** Component ba nút điều khiển phòng voice: micro, camera và kết thúc tham gia; hình dạng nút thay đổi theo trạng thái nhận từ props. */
 export const VoiceControls: React.FC<VoiceControlsProps> = ({
     isMuted, isVideoOn, onToggleMute, onToggleVideo, onLeave
 }) => {

@@ -1,15 +1,19 @@
 /**
  * File: translations.ts
- * Trách nhiệm: Kho chuỗi đa ngôn ngữ (i18n) cho toàn bộ giao diện SabTask.
- * Liên quan: useUIState.ts (hàm t()), HeaderLanguage.tsx, các component dùng state.t(...)
- * Chỉ hỗ trợ 2 ngôn ngữ: tiếng Anh (en) và tiếng Việt (vi).
+ * Mục đích: Kho chuỗi đa ngôn ngữ (i18n) cho toàn bộ giao diện SabTask, hỗ trợ tiếng Anh và tiếng Việt.
+ * Bảng chuỗi này được hàm dịch t() trong useUIState tra cứu theo ngôn ngữ người dùng đang chọn.
  */
 
+/** Mã ngôn ngữ được bảng dịch hỗ trợ, dùng làm khoá cấp một của đối tượng translations. */
 export type Language = 'en' | 'vi';
 
+/**
+ * Bảng dịch toàn ứng dụng: khoá cấp một là mã ngôn ngữ, khoá cấp hai là mã chuỗi giao diện.
+ * Hai nhánh 'en' và 'vi' phải có cùng tập khoá vì kiểu của hàm t() được suy ra từ nhánh 'en'.
+ */
 export const translations = {
+  /** Nhóm chuỗi giao diện tiếng Anh, đồng thời là nhánh chuẩn định nghĩa tập khoá hợp lệ. */
   en: {
-    // General
     appName: "SabTask",
     searchPlaceholder: "Search anything...",
     newTask: "New Task",
@@ -34,7 +38,6 @@ export const translations = {
     randomize: "Randomize",
     confirmDelete: "Are you sure you want to delete this?",
     
-    // Nav
     dashboard: "Overview",
     projects: "Projects",
     kanban: "Kanban Board",
@@ -46,7 +49,6 @@ export const translations = {
     mainMenu: "Main Menu",
     logout: "Log Out",
 
-    // Hub
     channels: "Channels",
     voiceRooms: "Voice Rooms",
     online: "Online",
@@ -57,13 +59,11 @@ export const translations = {
     unmute: "Unmute",
     video: "Video",
     
-    // Filter Bar
     filterPlaceholder: "Filter by title, tag, or description...",
     allPriorities: "All Priorities",
     allMembers: "All Members",
     clearFilters: "Clear",
 
-    // Dashboard
     projectsCount: "Projects",
     completedCount: "Completed",
     active: "Active",
@@ -81,7 +81,6 @@ export const translations = {
     monthly: "Monthly",
     noTasksFound: "No tasks found.",
     
-    // Chart Options
     created: "Created",
     due: "Due",
     comparison: "Comparison",
@@ -89,7 +88,6 @@ export const translations = {
     barChart: "Bar",
     lineChart: "Line",
     
-    // Projects View
     manageProjects: "Manage your team's initiatives and track progress.",
     progress: "Progress",
     noMembers: "No members",
@@ -104,7 +102,6 @@ export const translations = {
     assignedTasks: "Assigned Tasks",
     board: "Board",
     
-    // Team View
     manageTeam: "Manage your team and workloads.",
     assigned: "Assigned",
     done: "Done",
@@ -120,7 +117,6 @@ export const translations = {
     taskCompletion: "Task Completion",
     totalAssigned: "Total Assigned",
     
-    // Time Tracking
     monitorProductivity: "Monitor productivity and billable hours.",
     trackedToday: "Tracked Today",
     sessions: "Sessions",
@@ -130,7 +126,6 @@ export const translations = {
     duration: "Duration",
     noTimeEntries: "No time entries found. Start a timer on a task!",
 
-    // Task & Kanban
     taskDetails: "Task Details",
     taskTitle: "Task Title",
     assignee: "Assignee",
@@ -155,18 +150,15 @@ export const translations = {
     descPlaceholder: "Describe the task details...",
     newItemPlaceholder: "Create a new item for your team",
     
-    // Status Labels
     TODO: "To Do",
     IN_PROGRESS: "In Progress",
     REVIEW: "Review",
     DONE: "Done",
     
-    // Priority Labels
     LOW: "Low",
     MEDIUM: "Medium",
     HIGH: "High",
 
-    // Profile & Forms
     fullName: "Full Name",
     emailAddress: "Email Address",
     role: "Role",
@@ -182,14 +174,12 @@ export const translations = {
     projectPlaceholder: "e.g. Mobile App Redesign",
     projectDescPlaceholder: "Briefly describe the project scope...",
     
-    // Notifications
     notifications: "Notifications",
     unread: "unread",
     markAllRead: "Mark all as read",
     viewAllActivity: "View All Activity",
     noNotifications: "No notifications yet",
 
-    // Auth / Login
     loginTitle: "Sign in",
     loginSubtitle: "Enter your demo account to continue",
     password: "Password",
@@ -197,8 +187,8 @@ export const translations = {
     loginError: "Invalid email or password",
     demoHint: "Demo product — use accounts from TAI_KHOAN.md",
   },
+  /** Nhóm chuỗi giao diện tiếng Việt, dịch tương ứng từng khoá của nhánh 'en'. */
   vi: {
-    // General
     appName: "SabTask",
     searchPlaceholder: "Tìm kiếm...",
     newTask: "Công việc mới",
@@ -223,7 +213,6 @@ export const translations = {
     randomize: "Ngẫu nhiên",
     confirmDelete: "Bạn có chắc muốn xóa mục này?",
 
-    // Nav
     dashboard: "Tổng quan",
     projects: "Dự án",
     kanban: "Bảng Kanban",
@@ -235,7 +224,6 @@ export const translations = {
     mainMenu: "Menu chính",
     logout: "Đăng xuất",
 
-    // Hub
     channels: "Kênh chat",
     voiceRooms: "Phòng thoại",
     online: "Trực tuyến",
@@ -246,13 +234,11 @@ export const translations = {
     unmute: "Bật mic",
     video: "Video",
 
-    // Filter Bar
     filterPlaceholder: "Lọc theo tiêu đề, thẻ hoặc mô tả...",
     allPriorities: "Mọi mức ưu tiên",
     allMembers: "Mọi thành viên",
     clearFilters: "Xóa lọc",
 
-    // Dashboard
     projectsCount: "Dự án",
     completedCount: "Hoàn thành",
     active: "Đang làm",
@@ -270,7 +256,6 @@ export const translations = {
     monthly: "Theo tháng",
     noTasksFound: "Không tìm thấy công việc.",
 
-    // Chart Options
     created: "Đã tạo",
     due: "Hạn",
     comparison: "So sánh",
@@ -278,7 +263,6 @@ export const translations = {
     barChart: "Cột",
     lineChart: "Đường",
 
-    // Projects View
     manageProjects: "Quản lý dự án nhóm và theo dõi tiến độ.",
     progress: "Tiến độ",
     noMembers: "Chưa có thành viên",
@@ -293,7 +277,6 @@ export const translations = {
     assignedTasks: "Việc được giao",
     board: "Bảng",
 
-    // Team View
     manageTeam: "Quản lý thành viên và khối lượng công việc.",
     assigned: "Được giao",
     done: "Xong",
@@ -309,7 +292,6 @@ export const translations = {
     taskCompletion: "Hoàn thành việc",
     totalAssigned: "Tổng được giao",
 
-    // Time Tracking
     monitorProductivity: "Theo dõi năng suất và giờ làm việc.",
     trackedToday: "Đã ghi hôm nay",
     sessions: "Phiên",
@@ -319,7 +301,6 @@ export const translations = {
     duration: "Thời lượng",
     noTimeEntries: "Chưa có bản ghi thời gian. Hãy bật timer trên một công việc!",
 
-    // Task & Kanban
     taskDetails: "Chi tiết công việc",
     taskTitle: "Tiêu đề",
     assignee: "Người phụ trách",
@@ -344,18 +325,15 @@ export const translations = {
     descPlaceholder: "Mô tả chi tiết công việc...",
     newItemPlaceholder: "Tạo mục mới cho nhóm",
 
-    // Status Labels
     TODO: "Cần làm",
     IN_PROGRESS: "Đang làm",
     REVIEW: "Đang duyệt",
     DONE: "Hoàn thành",
 
-    // Priority Labels
     LOW: "Thấp",
     MEDIUM: "Trung bình",
     HIGH: "Cao",
 
-    // Profile & Forms
     fullName: "Họ và tên",
     emailAddress: "Email",
     role: "Vai trò",
@@ -371,14 +349,12 @@ export const translations = {
     projectPlaceholder: "vd: Thiết kế lại app di động",
     projectDescPlaceholder: "Mô tả ngắn phạm vi dự án...",
 
-    // Notifications
     notifications: "Thông báo",
     unread: "chưa đọc",
     markAllRead: "Đánh dấu đã đọc hết",
     viewAllActivity: "Xem mọi hoạt động",
     noNotifications: "Chưa có thông báo",
 
-    // Auth / Login
     loginTitle: "Đăng nhập",
     loginSubtitle: "Nhập tài khoản demo để tiếp tục",
     password: "Mật khẩu",

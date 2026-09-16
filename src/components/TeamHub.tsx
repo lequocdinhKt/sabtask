@@ -1,7 +1,9 @@
 /**
- * File: TeamHub.tsx
- * Trách nhiệm: Hub chat team — kênh text/voice, tin nhắn (persist DB), AI bot.
- * Liên quan: useTeamHub.ts, team-hub/*, groqService.
+ * File: components/TeamHub.tsx
+ * Mục đích: Màn hình Team Hub — nơi thành viên trao đổi theo kênh chat chữ hoặc phòng voice.
+ * Component ghép các phần con (sidebar kênh, header, khu tin nhắn, sân khấu voice, ô nhập, nút điều khiển voice),
+ * xử lý gửi tin nhắn kèm tệp, gọi trợ lý AI khi tin nhắn có "@ai"/"@groq", tạo/xóa kênh và chuyển đổi bố cục trên mobile.
+ * Phần voice hiện chỉ là giao diện mô phỏng (chưa có WebRTC nên không truyền âm thanh/hình ảnh thật).
  */
 
 import React, { useState } from 'react';
@@ -16,7 +18,7 @@ import { VoiceStage } from './team-hub/VoiceStage';
 import { MessageInput } from './team-hub/MessageInput';
 import { VoiceControls } from './team-hub/VoiceControls';
 
-/** View Team Hub — chat persist + voice UI mock + Groq */
+/** Component chính của Team Hub: quản lý kênh đang chọn, nội dung đang nhập, trạng thái voice và lắp ghép toàn bộ giao diện chat. */
 export const TeamHub: React.FC = () => {
   const { state } = useApp();
   const { user, users, isAuth } = state;
@@ -33,11 +35,13 @@ export const TeamHub: React.FC = () => {
 
   const activeChannel = hub.channels.find(c => c.id === activeChannelId) || hub.channels[0];
 
+  /** Chọn kênh cần xem và chuyển sang khung chat khi đang dùng bố cục mobile. */
   const handleChannelSelect = (channelId: string) => {
       setActiveChannelId(channelId);
       setMobileView('chat');
   };
 
+  /** Kiểm tra dung lượng tệp (tối đa 5MB) rồi đọc thành chuỗi data URL để đính kèm vào tin nhắn, phân biệt ảnh và tệp thường. */
   const processFile = (file: File) => {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) {
@@ -53,12 +57,14 @@ export const TeamHub: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  /** Nhận tệp người dùng chọn từ input file và đưa vào bước xử lý đính kèm. */
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) {
         processFile(e.target.files[0]);
     }
   };
 
+  /** Cho phép dán trực tiếp ảnh/tệp từ clipboard vào ô nhập tin nhắn. */
   const handlePaste = (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
@@ -69,6 +75,10 @@ export const TeamHub: React.FC = () => {
     }
   };
 
+  /**
+   * Gửi tin nhắn vào kênh đang mở: xóa ô nhập ngay để phản hồi nhanh, lưu tin nhắn qua hook Team Hub,
+   * sau đó nếu nội dung có "@ai" hoặc "@groq" thì gọi trợ lý AI và đăng câu trả lời vào cùng kênh.
+   */
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() && !attachment) return;
@@ -95,6 +105,10 @@ export const TeamHub: React.FC = () => {
     }
   };
 
+  /**
+   * Bật/tắt việc tham gia một phòng voice: nếu đang ở đúng phòng đó thì rời, ngược lại thì rời phòng cũ,
+   * chuyển sang phòng mới và đánh dấu đã tham gia. Trạng thái chỉ lưu ở client vì voice chưa kết nối thật.
+   */
   const toggleVoiceRoom = (channelId: string) => {
      if (isJoined && activeChannelId === channelId) {
          setIsJoined(false);
@@ -110,6 +124,7 @@ export const TeamHub: React.FC = () => {
      }
   };
 
+  /** Tạo kênh mới rồi mở luôn kênh vừa tạo nếu lưu thành công. */
   const handleCreateChannel = async (name: string, type: 'TEXT' | 'VOICE') => {
       const created = await hub.createChannel(name, type);
       if (created) {
@@ -118,6 +133,7 @@ export const TeamHub: React.FC = () => {
       }
   };
 
+  /** Xóa kênh và tự chuyển sang một kênh còn lại nếu kênh vừa xóa đang được mở. */
   const handleDeleteChannel = async (id: string) => {
       const ok = await hub.deleteChannel(id);
       if (ok && activeChannelId === id) {

@@ -1,31 +1,25 @@
-
 /**
- * File: useUIState.ts
- * Trách nhiệm: Quản lý state giao diện (tab, modal, theme, ngôn ngữ, toast, selection).
- * Liên quan: useAppLogic.ts, translations.ts, các component layout/modal.
- */
-/**
- * File: useUIState.ts
- * Trách nhiệm: Quản lý trạng thái UI (tab, sidebar, theme, ngôn ngữ, modal, toast).
- * Liên quan: useAppLogic.ts, translations.ts, AppContext.tsx.
+ * File: hooks/modules/useUIState.ts
+ * Mục đích: Hook quản lý toàn bộ trạng thái giao diện của SabTask: tab đang mở, cờ loading,
+ * trạng thái sidebar, chế độ sáng/tối, ngôn ngữ, các modal, đối tượng đang chọn/đang sửa,
+ * panel thông báo và hàng đợi toast. Theme và ngôn ngữ được đồng bộ với localStorage.
  */
 
 import { useState, useEffect } from 'react';
 import { ViewMode, ToastMessage, Language, TaskStatus, Task, Project, User } from '../../types';
 import { translations } from '../../translations';
 
-/** Hook giữ toàn bộ UI state và action setter tương ứng */
-/** Hook trạng thái UI toàn cục: tab, modal, theme, ngôn ngữ, toast */
+/**
+ * Hook tập trung mọi trạng thái giao diện và các setter tương ứng.
+ * @returns Đối tượng gồm `state` (giá trị UI hiện tại kèm hàm dịch t) và `actions` (các hàm cập nhật).
+ */
 export const useUIState = () => {
-  // --- Global UI ---
   const [activeTab, setActiveTab] = useState<ViewMode>('dashboard');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   
-  // --- Sidebar & Layout ---
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile
-  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true); // Desktop
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
 
-  // --- Theme & Language ---
   const [darkMode, setDarkMode] = useState(() => {
     try { return localStorage.getItem('SabTask-theme') === 'dark'; } catch { return false; }
   });
@@ -34,19 +28,17 @@ export const useUIState = () => {
     try {
       const stored = localStorage.getItem('SabTask-lang');
       if (stored === 'vi' || stored === 'en') return stored;
-      return 'vi'; // mặc định tiếng Việt; bỏ qua 'de' cũ nếu còn trong localStorage
+      return 'vi';
     } catch {
       return 'vi';
     }
   });
 
-  // --- Modals State ---
   const [isTaskModalOpen, setTaskModalOpen] = useState(false);
   const [isProfileModalOpen, setProfileModalOpen] = useState(false);
   const [isMemberModalOpen, setMemberModalOpen] = useState(false); 
   const [isProjectModalOpen, setProjectModalOpen] = useState(false);
 
-  // --- Selection / Editing State ---
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [selectedMember, setSelectedMember] = useState<User | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -54,38 +46,42 @@ export const useUIState = () => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [newTaskStatus, setNewTaskStatus] = useState<TaskStatus>(TaskStatus.TODO);
 
-  // --- Notifications Panel ---
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // --- Toast System ---
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // --- Effects ---
+  /** Mỗi khi darkMode đổi: lưu lựa chọn theme vào localStorage và thêm/bỏ class "dark" trên thẻ html. */
   useEffect(() => {
     localStorage.setItem('SabTask-theme', darkMode ? 'dark' : 'light');
     if (darkMode) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [darkMode]);
 
+  /** Mỗi khi ngôn ngữ đổi: ghi nhớ lựa chọn vào localStorage để giữ nguyên sau khi tải lại trang. */
   useEffect(() => {
     localStorage.setItem('SabTask-lang', language);
   }, [language]);
 
-  // --- Actions ---
-  /** Thêm toast thông báo tạm thời */
-  /** Thêm toast mới vào hàng đợi thông báo */
+  /**
+   * Thêm một toast vào hàng đợi thông báo để hiển thị trên giao diện.
+   * @param type Loại thông báo (thành công, lỗi hoặc thông tin).
+   * @param message Nội dung hiển thị cho người dùng.
+   */
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, type, message }]);
   };
 
-  /** Gỡ toast theo id */
+  /** Xoá một toast khỏi hàng đợi theo id, dùng khi người dùng đóng hoặc toast hết thời gian hiển thị. */
   const removeToast = (id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
-  /** Lấy chuỗi đã dịch theo khóa i18n hiện tại */
-  /** Lấy chuỗi dịch theo key và ngôn ngữ hiện tại */
+  /**
+   * Hàm dịch dùng trong component: tra chuỗi theo ngôn ngữ đang chọn.
+   * @param key Khoá chuỗi trong bảng translations.
+   * @returns Chuỗi đã dịch, hoặc trả về chính khoá nếu chưa có bản dịch.
+   */
   const t = (key: keyof typeof translations['en']) => {
     return translations[language][key] || key;
   };

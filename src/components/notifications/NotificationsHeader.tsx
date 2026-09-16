@@ -1,7 +1,7 @@
 /**
- * File: NotificationsHeader.tsx
- * Trách nhiệm: Header panel thông báo — đếm chưa đọc, mark all, đóng.
- * Liên quan: NotificationsPanel.tsx.
+ * File: components/notifications/NotificationsHeader.tsx
+ * Mục đích: Phần đầu panel thông báo, hiển thị tiêu đề và số thông báo chưa đọc, kèm nút
+ * đánh dấu tất cả là đã đọc và nút đóng panel.
  */
 
 import React from 'react';
@@ -9,7 +9,7 @@ import { NotificationsHeaderProps } from '../../types';
 import { Check, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Header panel với số unread và nút đánh dấu đã đọc */
+/** Component header panel thông báo: số lượng chưa đọc và hai nút đánh dấu đã đọc, đóng panel. */
 export const NotificationsHeader: React.FC<NotificationsHeaderProps> = ({ unreadCount, onMarkAllRead, onClose }) => {
   const { state } = useApp();
   const { t } = state;

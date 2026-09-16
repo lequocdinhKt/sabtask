@@ -1,25 +1,33 @@
 /**
- * File: useSearchSystem.ts
- * Trách nhiệm: Lọc task cục bộ và tìm kiếm toàn cục (project/task/member/comment).
- * Liên quan: HeaderSearch.tsx, FilterBar.tsx, useAppLogic.ts.
+ * File: hooks/modules/useSearchSystem.ts
+ * Mục đích: Hook đảm nhiệm hai việc tìm kiếm của SabTask: lọc danh sách task theo từ khoá,
+ * mức ưu tiên và người phụ trách; và tìm kiếm toàn cục trên project, task, comment, thành viên
+ * bằng cách tự tính điểm khớp rồi sắp xếp lấy 10 kết quả tốt nhất.
  */
 
 import { useState, useMemo } from 'react';
 import { Task, Project, User, SearchResult, FilterState } from '../../types';
 
-/** Hook bộ lọc và fuzzy search toàn app */
+/**
+ * Hook cung cấp bộ lọc task và chức năng tìm kiếm toàn cục.
+ * @param tasks Danh sách task hiện có để lọc và tìm kiếm.
+ * @param projects Danh sách project dùng cho tìm kiếm và lấy tên project của task.
+ * @param users Danh sách thành viên dùng cho tìm kiếm.
+ * @returns Bộ lọc kèm setter, danh sách task đã lọc, kết quả tìm kiếm toàn cục và hàm thực hiện tìm kiếm.
+ */
 export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[]) => {
-  // Local View Filters
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     priority: 'ALL',
     assigneeId: 'ALL'
   });
 
-  // Global Search Results
   const [globalSearchResults, setGlobalSearchResults] = useState<SearchResult[]>([]);
 
-  // Computed Filtered Tasks
+  /**
+   * Tính danh sách task thoả mãn đồng thời cả ba điều kiện lọc: từ khoá khớp tiêu đề/mô tả/thẻ,
+   * mức ưu tiên và người phụ trách. Chỉ tính lại khi danh sách task hoặc bộ lọc thay đổi.
+   */
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
       const searchMatch = 
@@ -35,8 +43,13 @@ export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[
     });
   }, [tasks, filters]);
 
-  // Global Fuzzy Search Logic
-  /** Tìm kiếm fuzzy trên project, task, comment, member; sắp xếp theo điểm */
+  /**
+   * Thực hiện tìm kiếm toàn cục và ghi kết quả vào state để thanh tìm kiếm hiển thị.
+   * Hàm quét lần lượt project, task kèm comment của task, rồi thành viên; mỗi kết quả được
+   * tính điểm khớp, sau đó sắp xếp giảm dần theo điểm và giữ lại tối đa 10 kết quả.
+   * Từ khoá rỗng sẽ xoá kết quả cũ.
+   * @param query Từ khoá người dùng nhập.
+   */
   const performGlobalSearch = (query: string) => {
     if (!query.trim()) {
       setGlobalSearchResults([]);
@@ -46,6 +59,14 @@ export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[
     const q = query.toLowerCase();
     const results: SearchResult[] = [];
 
+    /**
+     * Cho điểm mức độ khớp giữa một đoạn văn bản và từ khoá: trùng khít, bắt đầu bằng,
+     * chứa từ khoá, hoặc chứa đủ mọi từ trong từ khoá sẽ được điểm giảm dần; không khớp trả về 0.
+     * @param text Văn bản cần so khớp (tên project, tiêu đề task, nội dung comment...).
+     * @param query Từ khoá đã chuyển về chữ thường.
+     * @param weight Hệ số nhân thể hiện độ quan trọng của trường đang xét.
+     * @returns Điểm khớp sau khi nhân hệ số.
+     */
     const getScore = (text: string, query: string, weight = 1): number => {
       const t = text.toLowerCase();
       if (t === query) return 100 * weight;
@@ -56,7 +77,6 @@ export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[
       return 0;
     };
 
-    // 1. Projects
     projects.forEach(p => {
       const nameScore = getScore(p.name, q, 1.2);
       const descScore = getScore(p.description || '', q, 0.8);
@@ -69,7 +89,6 @@ export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[
       }
     });
 
-    // 2. Tasks & Comments
     tasks.forEach(t => {
       const titleScore = getScore(t.title, q, 1.1);
       const descScore = getScore(t.description || '', q, 0.7);
@@ -95,7 +114,6 @@ export const useSearchSystem = (tasks: Task[], projects: Project[], users: User[
       });
     });
 
-    // 3. Members
     users.forEach(u => {
       const nameScore = getScore(u.name, q, 1.1);
       const emailScore = getScore(u.email || '', q, 0.9);

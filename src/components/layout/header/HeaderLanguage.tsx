@@ -1,7 +1,8 @@
 /**
- * File: HeaderLanguage.tsx
- * Trách nhiệm: Dropdown chuyển ngôn ngữ giao diện (chỉ English / Tiếng Việt).
- * Liên quan: useUIState (language, setLanguage), translations.ts, Header.tsx.
+ * File: components/layout/header/HeaderLanguage.tsx
+ * Mục đích: Dropdown chọn ngôn ngữ giao diện trên header, hỗ trợ English và Tiếng Việt.
+ * Khi chọn một ngôn ngữ, component gọi action setLanguage của context để toàn bộ ứng dụng
+ * đổi sang bộ chuỗi dịch tương ứng.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -9,7 +10,10 @@ import { useApp } from '../../../context/AppContext';
 import { ChevronDown, Check } from 'lucide-react';
 import { Language } from '../../../types';
 
-/** Cờ Anh (UK) */
+/**
+ * Sub-component vẽ cờ Anh bằng SVG, dùng làm biểu tượng cho ngôn ngữ English.
+ * @param className Lớp CSS ghi đè kích thước cờ; nếu bỏ trống sẽ dùng kích thước mặc định.
+ */
 const FlagUK = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 60 30" className={className || "w-6 h-4 rounded shadow-sm object-cover"}>
     <rect width="60" height="30" fill="#012169"/>
@@ -20,7 +24,10 @@ const FlagUK = ({ className }: { className?: string }) => (
   </svg>
 );
 
-/** Cờ Việt Nam */
+/**
+ * Sub-component vẽ cờ Việt Nam bằng SVG, dùng làm biểu tượng cho ngôn ngữ Tiếng Việt.
+ * @param className Lớp CSS ghi đè kích thước cờ; nếu bỏ trống sẽ dùng kích thước mặc định.
+ */
 const FlagVN = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 60 40" className={className || "w-6 h-4 rounded shadow-sm object-cover"}>
     <rect width="60" height="40" fill="#DA251D"/>
@@ -31,6 +38,7 @@ const FlagVN = ({ className }: { className?: string }) => (
   </svg>
 );
 
+/** Component dropdown ngôn ngữ: hiện cờ và tên ngôn ngữ hiện tại, mở danh sách để đổi ngôn ngữ. */
 export const HeaderLanguage: React.FC = () => {
   const { state, actions } = useApp();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,8 +51,9 @@ export const HeaderLanguage: React.FC = () => {
 
   const currentLang = languages.find(l => l.code === state.language) || languages[0];
 
-  /** Đóng menu khi click ra ngoài */
+  /** Chạy một lần khi mount: lắng nghe mousedown toàn trang để đóng dropdown, cleanup gỡ listener. */
   useEffect(() => {
+    /** Đóng dropdown khi người dùng bấm chuột ra ngoài vùng menu. */
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);

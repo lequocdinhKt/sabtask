@@ -1,7 +1,7 @@
 /**
- * File: TaskComments.tsx
- * Trách nhiệm: Danh sách comment và form thêm comment mới.
- * Liên quan: useTaskForm.ts, TaskModal.tsx.
+ * File: components/task-modal/TaskComments.tsx
+ * Mục đích: Nội dung tab "Bình luận" trong modal task, hiển thị danh sách comment kèm avatar,
+ * tên người viết và ngày tạo, cùng một form ở dưới để gửi comment mới cho task đang mở.
  */
 
 import React from 'react';
@@ -9,7 +9,10 @@ import { TaskCommentsProps } from '../../types';
 import { Send } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Tab hiển thị và thêm comment task */
+/**
+ * Component khung bình luận: hiện thông báo khi chưa có comment, ngược lại render từng comment
+ * và khóa nút gửi khi ô nhập còn trống.
+ */
 export const TaskComments: React.FC<TaskCommentsProps> = ({
   comments, users, newComment, setNewComment, onAdd
 }) => {

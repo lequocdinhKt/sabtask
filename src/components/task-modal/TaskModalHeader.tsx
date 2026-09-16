@@ -1,7 +1,7 @@
 /**
- * File: TaskModalHeader.tsx
- * Trách nhiệm: Header modal task — tiêu đề, timer start/stop, nút đóng.
- * Liên quan: TaskModal.tsx, useTimeTracking.ts.
+ * File: components/task-modal/TaskModalHeader.tsx
+ * Mục đích: Phần đầu của modal task, hiển thị tiêu đề "Sửa" hoặc "Task mới" cùng mã task,
+ * nút bắt đầu/dừng timer đo thời gian làm việc (chỉ có khi đang sửa task đã tồn tại) và nút đóng modal.
  */
 
 import React from 'react';
@@ -9,7 +9,10 @@ import { X, Play, StopCircle } from 'lucide-react';
 import { TaskModalHeaderProps } from '../../types';
 import { useApp } from '../../context/AppContext';
 
-/** Header task modal với điều khiển timer */
+/**
+ * Component header modal task: dựa vào cờ isTimerActive để chọn hiển thị nút dừng timer
+ * hay nút bắt đầu timer cho task hiện tại.
+ */
 export const TaskModalHeader: React.FC<TaskModalHeaderProps> = ({ task, isTimerActive, onClose, onStartTimer, onStopTimer }) => {
   const { state } = useApp();
   const { t } = state;

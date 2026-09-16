@@ -1,7 +1,8 @@
 /**
- * File: TaskListView.tsx
- * Trách nhiệm: Danh sách task dạng bảng với lọc và đổi trạng thái nhanh.
- * Liên quan: FilterBar, types/props.ts (TaskListViewProps).
+ * File: components/TaskListView.tsx
+ * Mục đích: Hiển thị danh sách task dưới dạng bảng với các cột tiêu đề, project, người thực hiện,
+ * trạng thái, hạn hoàn thành và mức ưu tiên. Cho phép lọc task qua FilterBar, bấm một dòng để mở
+ * modal sửa task và bấm nút tròn đầu dòng để đánh dấu hoàn thành hoặc quay lại trạng thái cần làm.
  */
 
 import React from 'react';
@@ -12,19 +13,29 @@ import { Card } from './ui/Card';
 import { FilterBar } from './ui/FilterBar';
 import { useApp } from '../context/AppContext';
 
-/** View danh sách task với filter và quick status toggle */
+/** Component bảng danh sách task: dựng thanh lọc, phần đầu bảng và từng dòng task. */
 export const TaskListView: React.FC<TaskListViewProps> = ({
   tasks, users, projects, filters, setFilters, onEditTask, onUpdateStatus 
 }) => {
   const { state } = useApp();
   const { t } = state;
   
+  /**
+   * Chọn icon trạng thái để hiển thị ở đầu mỗi dòng task.
+   * @param s Trạng thái hiện tại của task.
+   * @returns Phần tử icon tương ứng với trạng thái đó.
+   */
   const getStatusIcon = (s: TaskStatus) => {
       if (s === TaskStatus.DONE) return <CheckCircle2 size={20} className="text-emerald-500 fill-emerald-50 dark:fill-emerald-900/20" />;
       if (s === TaskStatus.IN_PROGRESS) return <Clock size={20} className="text-primary-500" />;
       return <Circle size={20} className="text-slate-300 dark:text-slate-600" />;
   };
 
+  /**
+   * Quy đổi trạng thái task sang biến thể màu của Badge trạng thái.
+   * @param s Trạng thái hiện tại của task.
+   * @returns Tên biến thể màu mà component Badge sử dụng.
+   */
   const getStatusBadgeVariant = (s: TaskStatus) => {
       switch(s) {
           case TaskStatus.DONE: return 'success';
@@ -34,6 +45,11 @@ export const TaskListView: React.FC<TaskListViewProps> = ({
       }
   };
 
+  /**
+   * Tra tên project để hiển thị ở cột project của bảng.
+   * @param projectId Mã project của task.
+   * @returns Tên project tương ứng, hoặc "Unknown Project" nếu không tìm thấy.
+   */
   const getProjectName = (projectId: string) => {
       return projects?.find(p => p.id === projectId)?.name || 'Unknown Project';
   };

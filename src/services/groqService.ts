@@ -1,24 +1,26 @@
 /**
- * File: groqService.ts
- * Trách nhiệm: Gọi Groq AI để gợi ý subtask, mức ưu tiên và trả lời bot Team Hub.
- * Liên quan: hooks/useTaskForm.ts, components/TeamHub.tsx, vite.config.ts (GROQ_API_KEY).
+ * File: services/groqService.ts
+ * Mục đích: Lớp dịch vụ gọi Groq AI qua groq-sdk cho ba tính năng của SabTask:
+ * tách task thành danh sách subtask, gợi ý mức ưu tiên cho task và trả lời trợ lý trong Team Hub.
+ * API key lấy từ biến môi trường GROQ_API_KEY; client chạy trực tiếp trên browser nên chỉ phù hợp demo/học tập.
  */
 
 import Groq from 'groq-sdk';
 
-/**
- * Model Groq hiện còn hỗ trợ (Llama 3.3 đã bị gỡ / không còn access trên nhiều tài khoản).
- * Xem danh sách mới: https://console.groq.com/docs/models
- */
+/** Tên model Groq được dùng cho mọi lời gọi AI trong file này. */
 const GROQ_MODEL = 'openai/gpt-oss-20b';
 
+/** Client Groq dùng chung, cho phép gọi trực tiếp từ browser vì ứng dụng là SPA không có backend riêng. */
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
-  // SPA chạy trên browser; key nằm trong .env (chỉ dùng cho demo/học tập)
   dangerouslyAllowBrowser: true,
 });
 
-/** Gọi chat completion và lấy nội dung text trả về */
+/**
+ * Hàm dùng chung để gửi một prompt tới model Groq và lấy phần nội dung văn bản trả về.
+ * @param prompt Nội dung yêu cầu gửi cho model.
+ * @returns Văn bản kết quả đã cắt khoảng trắng, hoặc chuỗi rỗng nếu model không trả nội dung.
+ */
 const chatText = async (prompt: string): Promise<string> => {
   const completion = await groq.chat.completions.create({
     model: GROQ_MODEL,
@@ -28,7 +30,13 @@ const chatText = async (prompt: string): Promise<string> => {
   return completion.choices[0]?.message?.content?.trim() || '';
 };
 
-/** Gọi Groq để tách task thành 3–5 subtask dạng JSON array */
+/**
+ * Yêu cầu AI chia nhỏ một task thành 3–5 subtask ngắn, có thể thực hiện được.
+ * Hàm tự loại bỏ khung markdown ```json trước khi parse JSON.
+ * @param taskTitle Tiêu đề task cần chia nhỏ.
+ * @param taskDescription Mô tả chi tiết của task.
+ * @returns Mảng tên subtask; nếu gọi AI hoặc parse thất bại thì trả về mảng chứa một thông báo lỗi.
+ */
 export const generateSubtasks = async (taskTitle: string, taskDescription: string): Promise<string[]> => {
   try {
     const prompt = `
@@ -48,7 +56,11 @@ export const generateSubtasks = async (taskTitle: string, taskDescription: strin
   }
 };
 
-/** Phân tích tiêu đề task và trả về mức ưu tiên LOW/MEDIUM/HIGH */
+/**
+ * Nhờ AI suy luận mức độ khẩn cấp từ tiêu đề task để gợi ý mức ưu tiên khi tạo/sửa task.
+ * @param taskTitle Tiêu đề task cần đánh giá.
+ * @returns Chuỗi in hoa dạng LOW/MEDIUM/HIGH; mặc định là MEDIUM khi lỗi hoặc không có kết quả.
+ */
 export const suggestPriority = async (taskTitle: string): Promise<string> => {
   try {
     const text = await chatText(
@@ -60,7 +72,11 @@ export const suggestPriority = async (taskTitle: string): Promise<string> => {
   }
 };
 
-/** Trả lời ngắn cho bot Team Hub khi user mention @ai / @groq */
+/**
+ * Sinh câu trả lời ngắn cho trợ lý AI trong khung chat Team Hub.
+ * @param userMessage Tin nhắn người dùng gửi cho trợ lý.
+ * @returns Câu trả lời của AI, hoặc câu thông báo thay thế khi không gọi được dịch vụ.
+ */
 export const askTeamAssistant = async (userMessage: string): Promise<string> => {
   try {
     const text = await chatText(

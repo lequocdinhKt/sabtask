@@ -1,7 +1,8 @@
 /**
- * File: Sidebar.tsx
- * Trách nhiệm: Thanh điều hướng bên trái — chuyển view, profile, đăng xuất.
- * Liên quan: constants.ts (NAV_CONFIG), AppContext, ViewManager (activeTab).
+ * File: components/layout/Sidebar.tsx
+ * Mục đích: Thanh điều hướng bên trái của ứng dụng. Render danh sách menu từ NAV_CONFIG
+ * để đổi view đang hiển thị, hiển thị thông tin người dùng hiện tại để mở modal hồ sơ,
+ * và cung cấp nút đăng xuất; đồng thời xử lý trạng thái đóng/mở trên mobile và desktop.
  */
 
 import React from 'react';
@@ -12,6 +13,7 @@ import {
 import { NAV_CONFIG } from '../../constants';
 import { ViewMode } from '../../types';
 
+/** Bảng tra icon theo iconId khai báo trong NAV_CONFIG. */
 const ICON_MAP = {
     dashboard: LayoutDashboard,
     projects: Folder,
@@ -24,7 +26,7 @@ const ICON_MAP = {
     team: Users,
 };
 
-/** Icon logo chữ S của SabTask */
+/** Sub-component vẽ logo chữ S của SabTask bằng SVG cho khối thương hiệu ở đầu sidebar. */
 const LogoIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white">
         <path d="M7 6C7 4.89543 7.89543 4 9 4H15C16.1046 4 17 4.89543 17 6V8C17 9.10457 16.1046 10 15 10H9C7.89543 10 7 10.8954 7 12V14C7 15.1046 7.89543 16 9 16H15C16.1046 16 17 15.1046 17 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square" />
@@ -32,7 +34,7 @@ const LogoIcon = () => (
     </svg>
 );
 
-/** Sidebar chính: menu tab + hồ sơ + logout */
+/** Component sidebar chính: lớp phủ trên mobile, menu điều hướng và khối người dùng ở chân. */
 export const Sidebar: React.FC = () => {
     const { state, actions } = useApp();
     const { activeTab, user, isSidebarOpen, isDesktopSidebarOpen, t } = state;

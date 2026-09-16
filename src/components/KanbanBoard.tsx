@@ -1,7 +1,8 @@
 /**
- * File: KanbanBoard.tsx
- * Trách nhiệm: Bảng Kanban kéo-thả task theo cột trạng thái.
- * Liên quan: constants.ts (KANBAN_COLUMNS), FilterBar, useAppLogic.
+ * File: components/KanbanBoard.tsx
+ * Mục đích: Hiển thị danh sách task dưới dạng bảng Kanban, mỗi cột ứng với một trạng thái
+ * lấy từ KANBAN_COLUMNS. Cho phép kéo-thả thẻ task giữa các cột để đổi trạng thái, mở modal
+ * sửa task khi bấm vào thẻ và tạo task mới ngay tại cột tương ứng.
  */
 
 import React, { useState } from 'react';
@@ -12,7 +13,7 @@ import { FilterBar } from './ui/FilterBar';
 import { KANBAN_COLUMNS } from '../constants';
 import { useApp } from '../context/AppContext';
 
-/** Bảng Kanban với drag-and-drop cập nhật trạng thái task */
+/** Component bảng Kanban: dựng các cột trạng thái, thẻ task và thanh lọc phía trên. */
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   tasks, 
   projects,
@@ -27,26 +28,34 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   const { t } = state;
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
-  /** Bắt đầu kéo task — lưu id và hiệu ứng opacity */
+  /**
+   * Ghi nhớ task vừa được người dùng bắt đầu kéo và làm mờ thẻ để báo hiệu đang kéo.
+   * @param e Sự kiện kéo của React, dùng để đặt kiểu hiệu ứng và truy cập thẻ đang kéo.
+   * @param taskId Mã task được kéo, sẽ dùng lại khi thả vào cột đích.
+   */
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
     setDraggedTaskId(taskId);
     e.dataTransfer.effectAllowed = 'move';
     e.currentTarget.classList.add('opacity-50', 'scale-95');
   };
 
-  /** Kết thúc kéo — reset hiệu ứng và draggedTaskId */
+  /** Trả thẻ task về trạng thái hiển thị bình thường và xóa task đang kéo khi kết thúc thao tác kéo. */
   const handleDragEnd = (e: React.DragEvent) => {
     e.currentTarget.classList.remove('opacity-50', 'scale-95');
     setDraggedTaskId(null);
   };
 
-  /** Cho phép drop vào cột */
+  /** Chặn hành vi mặc định của trình duyệt để cột Kanban được phép nhận thẻ task thả vào. */
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
-  /** Thả task vào cột — cập nhật trạng thái mới */
+  /**
+   * Xử lý khi người dùng thả thẻ task vào một cột: gọi callback cập nhật trạng thái task theo cột đích.
+   * @param e Sự kiện thả của React.
+   * @param status Trạng thái ứng với cột nhận thẻ, sẽ trở thành trạng thái mới của task.
+   */
   const handleDrop = (e: React.DragEvent, status: TaskStatus) => {
     e.preventDefault();
     if (draggedTaskId) {
@@ -55,6 +64,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
     }
   };
 
+  /**
+   * Tra tên project để hiển thị nhãn project trên thẻ task.
+   * @param projectId Mã project của task.
+   * @returns Tên project tương ứng, hoặc undefined nếu không tìm thấy trong danh sách project.
+   */
   const getProjectName = (projectId: string) => {
     return projects?.find(p => p.id === projectId)?.name;
   };
@@ -80,7 +94,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, column.id)}
             >
-                {/* Column Header - Simplified for Paper look */}
                 <div className={`p-5 flex items-center justify-between border-b ${column.headerBorder} bg-transparent z-10`}>
                   <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${column.dotColor} shadow-sm ring-1 ring-white dark:ring-stone-800`}></div>
@@ -97,7 +110,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   </button>
                 </div>
 
-                {/* Tasks Container - Flat background for paper feel */}
                 <div 
                   className="p-4 space-y-3 flex-1 min-h-[600px] bg-transparent"
                 >
@@ -160,7 +172,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                   
                   {columnTasks.length === 0 && (
                       <div className="h-full flex flex-col items-center justify-center opacity-30 pointer-events-none mt-10">
-                          {/* Ruled lines effect for empty paper state */}
                           <div className="w-full border-b border-slate-200 dark:border-stone-800 mb-8"></div>
                           <div className="w-full border-b border-slate-200 dark:border-stone-800 mb-8"></div>
                           <div className="w-full border-b border-slate-200 dark:border-stone-800 mb-8"></div>

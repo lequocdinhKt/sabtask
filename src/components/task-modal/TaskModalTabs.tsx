@@ -1,14 +1,17 @@
 /**
- * File: TaskModalTabs.tsx
- * Trách nhiệm: Tab chuyển giữa details, subtasks, comments trong modal task.
- * Liên quan: TaskModal.tsx, types/props.ts (TaskModalTabsProps).
+ * File: components/task-modal/TaskModalTabs.tsx
+ * Mục đích: Thanh tab của modal task, cho phép chuyển qua lại giữa ba tab chi tiết, subtask và
+ * bình luận. Tab đang chọn được tô sáng, riêng tab subtask và bình luận kèm số lượng bản ghi hiện có.
  */
 
 import React from 'react';
 import { TaskModalTabsProps } from '../../types';
 import { useApp } from '../../context/AppContext';
 
-/** Tab bar details / subtasks / comments với badge đếm */
+/**
+ * Component thanh tab: mỗi nút gọi setActiveTab để đổi tab đang mở và so sánh với activeTab
+ * để quyết định kiểu hiển thị được tô sáng.
+ */
 export const TaskModalTabs: React.FC<TaskModalTabsProps> = ({ activeTab, setActiveTab, subtasksCount, commentsCount }) => {
   const { state } = useApp();
   const { t } = state;

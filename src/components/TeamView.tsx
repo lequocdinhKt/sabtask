@@ -1,7 +1,8 @@
 /**
- * File: TeamView.tsx
- * Trách nhiệm: Danh sách thành viên team — thêm, sửa, xóa (admin).
- * Liên quan: MemberModal, MemberDetailView, useAppLogic.
+ * File: components/TeamView.tsx
+ * Mục đích: Hiển thị danh sách thành viên của nhóm dưới dạng lưới card, kèm thống kê số task được
+ * giao và số task đã hoàn thành của từng người. Nếu người đang đăng nhập có vai trò ADMIN thì view
+ * hiện thêm các hành động thêm, sửa, xoá thành viên (chỉ là guard phía client, RLS mới là lớp bảo mật chính).
  */
 
 import React from 'react';
@@ -12,7 +13,7 @@ import { Button } from './ui/Button';
 import { Mail, Briefcase, CheckCircle2, Plus, Trash2, Edit } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
-/** View quản lý thành viên team */
+/** Component chính của trang Team: render lưới card thành viên và các nút quản trị dành cho ADMIN. */
 export const TeamView: React.FC<TeamViewProps> = ({
   currentUser, users, tasks, onAddMember, onEditMember, onDeleteMember, onMemberClick
 }) => {
@@ -36,6 +37,7 @@ export const TeamView: React.FC<TeamViewProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {users.map(user => {
+          /** Tổng hợp số task được giao, số task đã xong và đang làm của một thành viên để hiển thị trên card. */
           const userTasks = tasks.filter(t => t.assigneeId === user.id);
           const completed = userTasks.filter(t => t.status === TaskStatus.DONE).length;
           const inProgress = userTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length;
@@ -92,7 +94,6 @@ export const TeamView: React.FC<TeamViewProps> = ({
                   <span className="text-xs font-bold text-primary-600">{inProgress} {t('active')}</span>
                </div>
 
-               {/* Admin Controls */}
                {isAdmin && !isMe && (
                    <div className="flex gap-2 pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto" onClick={e => e.stopPropagation()}>
                        <button 
@@ -103,6 +104,7 @@ export const TeamView: React.FC<TeamViewProps> = ({
                        </button>
                        <button 
                            onClick={() => {
+                               /** Hỏi xác nhận rồi mới yêu cầu xoá thành viên khỏi hệ thống. */
                                if (window.confirm(t('confirmDelete'))) {
                                    onDeleteMember(user.id);
                                }

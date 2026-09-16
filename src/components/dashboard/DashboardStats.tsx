@@ -1,7 +1,6 @@
 /**
- * File: DashboardStats.tsx
- * Trách nhiệm: Thẻ thống kê số project và task hoàn thành trên dashboard.
- * Liên quan: Dashboard.tsx, types/props.ts (DashboardStatsProps).
+ * File: components/dashboard/DashboardStats.tsx
+ * Mục đích: Hai thẻ số liệu tổng quan ở đầu trang Dashboard, gồm tổng số project (bấm vào để chuyển sang view Projects) và tổng số task đã hoàn thành.
  */
 
 import React from 'react';
@@ -11,7 +10,12 @@ import { Badge } from '../ui/Badge';
 import { FolderKanban, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
-/** Thẻ stats project count và completed tasks */
+/**
+ * Render cặp thẻ thống kê project và task hoàn thành, lấy nhãn hiển thị từ hàm dịch t().
+ * @param projectsCount Số project hiện có để hiển thị trên thẻ thứ nhất.
+ * @param completedTasksCount Số task đã hoàn thành để hiển thị trên thẻ thứ hai.
+ * @param onNavigateProjects Callback chạy khi người dùng bấm thẻ project để mở view Projects.
+ */
 export const DashboardStats: React.FC<DashboardStatsProps> = ({ projectsCount, completedTasksCount, onNavigateProjects }) => {
   const { state } = useApp();
   const { t } = state;

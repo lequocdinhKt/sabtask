@@ -1,7 +1,6 @@
 /**
- * File: TaskTrendChart.tsx
- * Trách nhiệm: Biểu đồ xu hướng task tạo/đến hạn theo tuần hoặc tháng.
- * Liên quan: useDashboardData.ts, recharts, constants.ts (CHART_COLORS).
+ * File: components/dashboard/TaskTrendChart.tsx
+ * Mục đích: Biểu đồ xu hướng task trên Dashboard, vẽ bằng recharts. Cho phép người dùng đổi kiểu biểu đồ (area/bar/line), đổi chỉ số hiển thị (task tạo mới, task đến hạn hoặc so sánh cả hai) và đổi khoảng thời gian (tuần/tháng).
  */
 
 import React, { useState } from 'react';
@@ -17,7 +16,13 @@ import {
   BarChart2, LineChart as LineChartIcon, Activity, 
 } from 'lucide-react';
 
-/** Biểu đồ trend task với toggle weekly/monthly và loại chart */
+/**
+ * Render biểu đồ xu hướng task cùng các nhóm nút chuyển kiểu biểu đồ, chỉ số và khoảng thời gian.
+ * Kiểu biểu đồ và chỉ số là state nội bộ, còn khoảng thời gian do component cha quản lý.
+ * @param data Dữ liệu theo mốc thời gian, mỗi phần tử gồm day, created và due.
+ * @param timeRange Khoảng thời gian đang chọn ('weekly' hoặc 'monthly').
+ * @param onRangeChange Callback yêu cầu component cha đổi khoảng thời gian.
+ */
 export const TaskTrendChart: React.FC<TaskTrendChartProps> = ({ data, timeRange, onRangeChange }) => {
   const { state } = useApp();
   const { t, darkMode } = state;
@@ -28,6 +33,7 @@ export const TaskTrendChart: React.FC<TaskTrendChartProps> = ({ data, timeRange,
   const legendColor = darkMode ? '#E2E8F0' : '#334155';
   const gridStroke = darkMode ? '#334155' : '#E2E8F0';
 
+  /** Tooltip tùy biến cho recharts: hiện nhãn mốc thời gian và giá trị của từng đường/cột đang hover. */
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -47,6 +53,7 @@ export const TaskTrendChart: React.FC<TaskTrendChartProps> = ({ data, timeRange,
     return null;
   };
 
+  /** Chọn và dựng thành phần biểu đồ tương ứng với chartType, chỉ vẽ các chuỗi dữ liệu khớp với metric đang chọn. */
   const renderChart = () => {
     const commonProps = {
       data: data,

@@ -1,19 +1,27 @@
 /**
- * File: LoginScreen.tsx
- * Trách nhiệm: Màn hình đăng nhập (Supabase Auth email/password).
- * Liên quan: App.tsx (auth gate), useAppLogic (signInWithPassword), TAI_KHOAN.md.
+ * File: components/auth/LoginScreen.tsx
+ * Mục đích: Màn hình đăng nhập của SabTask, hiển thị khi người dùng chưa có phiên đăng nhập.
+ * File này thu thập email và mật khẩu rồi gọi hàm onLogin do tầng logic cung cấp (đăng nhập
+ * bằng Supabase Auth email/password), hiển thị trạng thái đang xử lý và thông báo lỗi khi
+ * thông tin không hợp lệ. Toàn bộ nhãn giao diện có sẵn hai ngôn ngữ Anh và Việt.
  */
 
 import React, { useState, FormEvent } from 'react';
 import { LoginScreenProps } from '../../types';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 
+/**
+ * Component màn hình đăng nhập với form email/mật khẩu và nền động.
+ * @param onLogin Hàm thực hiện đăng nhập, trả về true khi thành công và false khi thất bại.
+ * @param language Ngôn ngữ hiển thị nhãn của form, mặc định là tiếng Việt.
+ */
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, language = 'vi' }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /** Bộ chuỗi hiển thị của form theo ngôn ngữ đang chọn. */
   const copy = language === 'en'
     ? {
         title: 'Sign in',
@@ -34,7 +42,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, language = 'v
         hint: 'Tài khoản — xem TAI_KHOAN.md (Supabase Auth)',
       };
 
-  /** Xử lý submit form đăng nhập */
+  /**
+   * Xử lý khi người dùng gửi form: chặn reload trang, xoá lỗi cũ, bật trạng thái đang xử lý,
+   * gọi onLogin và hiển thị thông báo lỗi nếu đăng nhập không thành công.
+   * @param e Sự kiện submit của form đăng nhập.
+   */
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');

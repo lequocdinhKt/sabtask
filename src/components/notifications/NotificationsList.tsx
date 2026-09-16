@@ -1,16 +1,22 @@
 /**
- * File: NotificationsList.tsx
- * Trách nhiệm: Danh sách thông báo với icon theo loại.
- * Liên quan: NotificationsPanel.tsx, types/models.ts (Notification).
+ * File: components/notifications/NotificationsList.tsx
+ * Mục đích: Danh sách cuộn các thông báo của người dùng, mỗi dòng gồm icon theo loại thông báo,
+ * tiêu đề, nội dung và giờ tạo. Thông báo chưa đọc được làm nổi bật và bấm vào một dòng sẽ
+ * gọi hành động đánh dấu thông báo đó là đã đọc.
  */
 
 import React from 'react';
 import { NotificationsListProps, Notification } from '../../types';
 import { User, Clock, AlertCircle, MessageSquare } from 'lucide-react';
 
-/** Danh sách item thông báo, click để đánh dấu đã đọc */
+/** Component danh sách thông báo: render từng dòng thông báo và cho phép đánh dấu đã đọc khi bấm vào. */
 export const NotificationsList: React.FC<NotificationsListProps> = ({ notifications, onMarkRead }) => {
   
+  /**
+   * Chọn icon và màu tương ứng với loại thông báo để hiển thị ở đầu mỗi dòng.
+   * @param type Loại thông báo (giao việc, đổi trạng thái, đến hạn, còn lại là bình luận).
+   * @returns Phần tử icon đã gắn màu phù hợp.
+   */
   const getIcon = (type: Notification['type']) => {
     switch (type) {
       case 'ASSIGNMENT': return <User size={16} className="text-blue-500" />;

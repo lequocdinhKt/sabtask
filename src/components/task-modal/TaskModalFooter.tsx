@@ -1,7 +1,8 @@
 /**
- * File: TaskModalFooter.tsx
- * Trách nhiệm: Footer modal task — xóa, hủy, lưu.
- * Liên quan: TaskModal.tsx, useTaskForm.ts.
+ * File: components/task-modal/TaskModalFooter.tsx
+ * Mục đích: Phần chân của modal task, chứa nút xóa task (chỉ hiện khi đang sửa task đã tồn tại
+ * và modal cha có truyền hàm xóa), nút hủy để đóng modal và nút lưu với nhãn thay đổi theo
+ * việc đang tạo mới hay cập nhật task.
  */
 
 import React from 'react';
@@ -10,7 +11,7 @@ import { TaskModalFooterProps } from '../../types';
 import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 
-/** Footer modal với nút delete, cancel và save */
+/** Component footer modal task: bố trí nút xóa bên trái, nhóm nút hủy và lưu bên phải. */
 export const TaskModalFooter: React.FC<TaskModalFooterProps> = ({ task, onDelete, onClose, onSave }) => {
   const { state } = useApp();
   const { t } = state;

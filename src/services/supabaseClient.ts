@@ -1,7 +1,8 @@
 /**
- * File: supabaseClient.ts
- * Trách nhiệm: Khởi tạo client Supabase dùng chung cho mọi CRUD.
- * Liên quan: .env (SUPABASE_URL, SUPABASE_ANON_KEY), useDataFetching, useEntityOperations, useTimeTracking.
+ * File: services/supabaseClient.ts
+ * Mục đích: Khởi tạo và export một instance Supabase dùng chung cho toàn bộ ứng dụng
+ * (xác thực, truy vấn Postgres, realtime). Cấu hình đọc từ biến môi trường SUPABASE_URL
+ * và SUPABASE_ANON_KEY; nếu thiếu thì chủ động ném lỗi ngay khi nạp module.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -14,9 +15,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 /**
- * Lock no-op: tránh lỗi Navigator LockManager
- * "Acquiring an exclusive Navigator LockManager lock ... immediately failed"
- * khi React Strict Mode / nhiều tab / HMR tranh lock auth-token.
+ * Hàm lock rỗng thay thế cơ chế Navigator LockManager mặc định của Supabase Auth.
+ * Dùng để tránh lỗi tranh chấp lock auth-token khi chạy React Strict Mode, mở nhiều tab hoặc HMR:
+ * hàm bỏ qua tên lock và thời gian chờ, gọi trực tiếp tác vụ được truyền vào.
+ * @param _name Tên lock do Supabase truyền vào (không sử dụng).
+ * @param _acquireTimeout Thời gian chờ lấy lock (không sử dụng).
+ * @param fn Tác vụ bất đồng bộ cần thực thi.
+ * @returns Kết quả trả về của fn.
  */
 const authLock = async <R>(
   _name: string,
@@ -24,7 +29,10 @@ const authLock = async <R>(
   fn: () => Promise<R>
 ): Promise<R> => fn()
 
-/** Instance Supabase singleton */
+/**
+ * Instance Supabase dùng chung (singleton) với chế độ lưu phiên, tự làm mới token,
+ * nhận session từ URL và dùng authLock ở trên.
+ */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,

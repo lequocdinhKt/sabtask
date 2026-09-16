@@ -1,7 +1,8 @@
 /**
- * File: MemberForm.tsx
- * Trách nhiệm: Form thêm/sửa thành viên — tên, email, role, avatar.
- * Liên quan: MemberModal.tsx, useEntityOperations.ts.
+ * File: components/member-modal/MemberForm.tsx
+ * Mục đích: Form nhập thông tin thành viên (họ tên, email, quyền truy cập ADMIN/MEMBER, chức danh
+ * công việc, ảnh đại diện) dùng chung cho cả trường hợp thêm mới và chỉnh sửa. Khi submit, form gom
+ * dữ liệu thành một đối tượng thành viên rồi chuyển lên hàm onSave của component cha để lưu.
  */
 
 import React, { useState, useRef } from 'react';
@@ -10,7 +11,7 @@ import { Camera, User as UserIcon, Mail, Shield, Link, Briefcase } from 'lucide-
 import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 
-/** Form nhập thông tin member mới hoặc chỉnh sửa */
+/** Component form thêm/sửa thành viên: quản lý state các trường nhập và gửi dữ liệu khi submit. */
 export const MemberForm: React.FC<MemberFormProps> = ({ member, onSave, onClose }) => {
   const { state } = useApp();
   const { t } = state;
@@ -19,7 +20,10 @@ export const MemberForm: React.FC<MemberFormProps> = ({ member, onSave, onClose 
   const [role, setRole] = useState<'ADMIN' | 'MEMBER'>(member?.role || 'MEMBER');
   const [jobRole, setJobRole] = useState(member?.jobRole || '');
   
-  // Logic for initial avatar
+  /**
+   * Xác định ảnh đại diện ban đầu của form.
+   * @returns Avatar hiện có của thành viên khi đang sửa, hoặc một avatar Dicebear sinh ngẫu nhiên khi thêm mới.
+   */
   const getInitialAvatar = () => {
       if (member?.avatar) return member.avatar;
       const seed = Math.random().toString(36).substring(7);
@@ -29,6 +33,7 @@ export const MemberForm: React.FC<MemberFormProps> = ({ member, onSave, onClose 
   const [avatar, setAvatar] = useState(getInitialAvatar());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /** Đọc ảnh người dùng chọn từ máy thành chuỗi base64 để xem trước và dùng làm avatar. */
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -40,11 +45,16 @@ export const MemberForm: React.FC<MemberFormProps> = ({ member, onSave, onClose 
     }
   };
 
+  /** Sinh lại một avatar Dicebear ngẫu nhiên khi người dùng bấm nút đổi ảnh. */
   const handleRandomizeAvatar = () => {
     const seed = Math.random().toString(36).substring(7);
     setAvatar(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
   };
 
+  /**
+   * Chặn reload trang khi submit, gom các trường trong form thành dữ liệu thành viên rồi gọi onSave.
+   * Khi thêm mới, id được sinh tạm ở phía client; khi sửa thì giữ nguyên id cũ.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({

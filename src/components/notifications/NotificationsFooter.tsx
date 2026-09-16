@@ -1,7 +1,7 @@
 /**
- * File: NotificationsFooter.tsx
- * Trách nhiệm: Footer panel thông báo — nút xem tất cả.
- * Liên quan: NotificationsPanel.tsx.
+ * File: components/notifications/NotificationsFooter.tsx
+ * Mục đích: Phần chân panel thông báo, chỉ chứa một nút để xem toàn bộ hoạt động;
+ * hành vi khi bấm do component cha truyền vào qua prop onViewAll.
  */
 
 import React from 'react';
@@ -9,7 +9,7 @@ import { NotificationsFooterProps } from '../../types';
 import { Button } from '../ui/Button';
 import { useApp } from '../../context/AppContext';
 
-/** Footer với nút chuyển xem toàn bộ thông báo */
+/** Component chân panel thông báo với nút xem toàn bộ hoạt động. */
 export const NotificationsFooter: React.FC<NotificationsFooterProps> = ({ onViewAll }) => {
   const { state } = useApp();
   const { t } = state;

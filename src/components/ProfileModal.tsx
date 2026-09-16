@@ -1,7 +1,8 @@
 /**
- * File: ProfileModal.tsx
- * Trách nhiệm: Modal chỉnh sửa profile người dùng hiện tại (avatar, tên, email).
- * Liên quan: useEntityOperations (handleProfileUpdate), Sidebar.
+ * File: components/ProfileModal.tsx
+ * Mục đích: Modal cho người dùng đang đăng nhập tự cập nhật hồ sơ của mình gồm ảnh đại diện, họ tên,
+ * email và vai trò. Ô vai trò chỉ cho phép chỉnh khi người dùng là ADMIN, còn MEMBER chỉ xem ở dạng
+ * chỉ đọc (đây là guard phía client, RLS trên database mới là lớp bảo mật chính).
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,27 +11,28 @@ import { X, Camera, Mail, Shield, User as UserIcon, Upload, RefreshCw } from 'lu
 import { Button } from './ui/Button';
 import { useApp } from '../context/AppContext';
 
-/** Modal cập nhật thông tin profile người dùng đang đăng nhập */
+/** Component modal chỉnh sửa hồ sơ người dùng hiện tại; không render gì khi modal đang đóng. */
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, user, onUpdate }) => {
   const { state } = useApp();
   const { t } = state;
   const [formData, setFormData] = useState<User>(user);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  /** Đồng bộ dữ liệu form với hồ sơ người dùng mỗi khi user thay đổi hoặc modal được mở lại, để bỏ các sửa đổi chưa lưu. */
   useEffect(() => {
     setFormData(user);
   }, [user, isOpen]);
 
   if (!isOpen) return null;
 
-  /** Lưu thay đổi profile và gọi onUpdate */
+  /** Chặn reload trang khi submit, gửi dữ liệu hồ sơ đã sửa qua onUpdate rồi đóng modal. */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdate(formData);
     onClose();
   };
 
-  /** Upload ảnh avatar từ file input */
+  /** Đọc ảnh người dùng chọn từ máy thành chuỗi base64 và đặt làm ảnh đại diện xem trước trong form. */
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -42,6 +44,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, use
     }
   };
 
+  /** Sinh một avatar Dicebear ngẫu nhiên thay cho ảnh đại diện hiện tại trong form. */
   const handleRandomizeAvatar = () => {
     const seed = Math.random().toString(36).substring(7);
     setFormData(prev => ({ ...prev, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}` }));

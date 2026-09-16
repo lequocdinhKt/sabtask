@@ -1,7 +1,8 @@
 /**
- * File: ProjectsView.tsx
- * Trách nhiệm: Lưới thẻ dự án — tạo, sửa, xóa, mở chi tiết.
- * Liên quan: projects-view/*, ProjectDetailView, useAppLogic.
+ * File: components/ProjectsView.tsx
+ * Mục đích: Hiển thị toàn bộ dự án dưới dạng lưới thẻ, mỗi thẻ gồm trạng thái, tiến độ,
+ * thành viên và số task đã hoàn thành. Cung cấp lối vào cho các thao tác tạo dự án mới,
+ * sửa, xoá và mở trang chi tiết của một dự án.
  */
 
 import React from 'react';
@@ -14,14 +15,18 @@ import { ProjectCardProgress } from './projects-view/ProjectCardProgress';
 import { ProjectCardFooter } from './projects-view/ProjectCardFooter';
 import { useApp } from '../context/AppContext';
 
-/** View danh sách project dạng card grid */
+/** Component màn hình danh sách dự án: dựng lưới thẻ dự án kèm các hành động tạo, sửa, xoá và mở chi tiết. */
 export const ProjectsView: React.FC<ProjectsViewProps> = ({
   projects, tasks, users, onCreateProject, onEditProject, onDeleteProject, onProjectClick
 }) => {
   const { state } = useApp();
   const { t } = state;
   
-  // Calculate real progress for each project
+  /**
+   * Tính số liệu task thực tế của một dự án để hiển thị tiến độ trên thẻ.
+   * @param projectId Id của dự án cần tính.
+   * @returns Tổng số task, số task đã hoàn thành, phần trăm tiến độ và danh sách task thuộc dự án.
+   */
   const getProjectStats = (projectId: string) => {
     const projectTasks = tasks.filter(t => t.projectId === projectId);
     const total = projectTasks.length;
@@ -53,7 +58,6 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({
               onClick={() => onProjectClick(project)}
               className="flex flex-col h-full group hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-300 relative overflow-hidden cursor-pointer"
             >
-               {/* Decorative Gradient Line */}
                <div className={`absolute top-0 left-0 right-0 h-1.5 ${
                  project.status === 'ACTIVE' ? 'bg-emerald-500' : 
                  project.status === 'COMPLETED' ? 'bg-primary-600' : 'bg-slate-300'

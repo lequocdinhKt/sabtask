@@ -1,14 +1,21 @@
 /**
- * File: useTimeTracking.ts
- * Trách nhiệm: Quản lý timer theo dõi thời gian làm việc trên task.
- * Liên quan: supabaseClient.ts, HeaderTimer.tsx, useAppLogic.ts.
+ * File: hooks/modules/useTimeTracking.ts
+ * Mục đích: Hook quản lý đồng hồ bấm giờ làm việc trên task. Hook giữ timer đang chạy,
+ * khôi phục/ghi nhớ timer qua localStorage để không mất khi tải lại trang, và khi dừng thì
+ * ghi một bản ghi vào bảng time_entries trên Supabase rồi cập nhật lại state phía client.
  */
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
 import { ActiveTimer, TimeEntry, User } from '../../types';
 
-/** Hook timer: lưu localStorage, start/stop và ghi time entry lên Supabase */
+/**
+ * Hook cung cấp timer chấm công cho ứng dụng.
+ * @param user Người dùng hiện tại, dùng để gắn bản ghi thời gian vào đúng chủ sở hữu.
+ * @param setTimeEntries Setter danh sách bản ghi thời gian, để thêm entry mới ngay sau khi lưu.
+ * @param addToast Hàm hiển thị thông báo kết quả cho người dùng.
+ * @returns Timer đang chạy cùng hai hàm bắt đầu và dừng đếm thời gian.
+ */
 export const useTimeTracking = (
   user: User, 
   setTimeEntries: React.Dispatch<React.SetStateAction<TimeEntry[]>>,
@@ -22,6 +29,7 @@ export const useTimeTracking = (
     } catch { return null; }
   });
 
+  /** Mỗi khi timer thay đổi: lưu timer đang chạy vào localStorage, hoặc xoá key khi không còn timer. */
   useEffect(() => {
     if (activeTimer) {
       localStorage.setItem('SabTask-timer', JSON.stringify(activeTimer));
@@ -30,7 +38,11 @@ export const useTimeTracking = (
     }
   }, [activeTimer]);
 
-  /** Bắt đầu đếm thời gian cho task (chỉ một timer cùng lúc) */
+  /**
+   * Bắt đầu đếm thời gian cho một task; chỉ cho phép một timer chạy tại một thời điểm
+   * nên sẽ báo lỗi nếu đang có timer khác.
+   * @param taskId Id task cần chấm công.
+   */
   const handleStartTimer = (taskId: string) => {
     if (activeTimer) {
       addToast('error', "A timer is already running. Please stop it first.");
@@ -44,7 +56,10 @@ export const useTimeTracking = (
     addToast('success', 'Timer started');
   };
 
-  /** Dừng timer, lưu time entry vào DB và cập nhật state */
+  /**
+   * Dừng timer đang chạy: tính thời lượng, lưu bản ghi vào bảng time_entries trên Supabase,
+   * thêm bản ghi đã map sang state và xoá timer. Nếu lưu thất bại thì giữ nguyên timer và báo lỗi.
+   */
   const handleStopTimer = async () => {
     if (!activeTimer) return;
     

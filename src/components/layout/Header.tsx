@@ -1,7 +1,8 @@
 /**
- * File: Header.tsx
- * Trách nhiệm: Header cố định — đồng hồ, tìm kiếm, timer, theme, nút task mới.
- * Liên quan: header/* sub-components, AppContext, Sidebar.tsx.
+ * File: components/layout/Header.tsx
+ * Mục đích: Thanh header cố định phía trên của ứng dụng SabTask. File này ghép các
+ * widget con của header (đồng hồ, timer đang chạy, ô tìm kiếm, chọn ngôn ngữ, theme,
+ * thông báo, nút bật/tắt sidebar) và nút tạo task mới thành một bố cục duy nhất.
  */
 
 import React from 'react';
@@ -9,14 +10,13 @@ import { useApp } from '../../context/AppContext';
 import { Plus } from 'lucide-react';
 import { Button } from '../ui/Button';
 
-// Sub-components
 import { HeaderClock } from './header/HeaderClock';
 import { HeaderSearch } from './header/HeaderSearch';
 import { HeaderTimer } from './header/HeaderTimer';
 import { HeaderLanguage } from './header/HeaderLanguage';
 import { HeaderControls, SidebarToggle } from './header/HeaderControls';
 
-/** Header layout chính ghép clock, search, timer, controls */
+/** Component header chính: sắp xếp các widget con và nút mở modal tạo task mới. */
 export const Header: React.FC = () => {
     const { state, actions } = useApp();
     const { t } = state;
@@ -37,7 +37,6 @@ export const Header: React.FC = () => {
                 <HeaderLanguage />
                 <HeaderControls />
 
-                {/* New Task Button - Hidden on small tablets/mobile */}
                 <Button onClick={() => actions.openNewTaskModal()} className="hidden md:flex" icon={<Plus size={16} />}>
                     {t('newTask')}
                 </Button>

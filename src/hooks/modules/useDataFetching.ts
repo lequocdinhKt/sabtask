@@ -1,14 +1,24 @@
 /**
- * File: useDataFetching.ts
- * Trách nhiệm: Tải users/projects/tasks/time_entries/notifications từ Supabase khi đã đăng nhập.
- * Liên quan: supabaseClient.ts, useAppLogic.ts, supabase_schema.sql.
+ * File: hooks/modules/useDataFetching.ts
+ * Mục đích: Hook chịu trách nhiệm tải dữ liệu ban đầu của ứng dụng từ Supabase (users, projects,
+ * project_members, tasks kèm subtasks/comments, time_entries, notifications) và chuyển đổi từ dạng
+ * snake_case của database sang model frontend. Hook giữ luôn các state dữ liệu này cùng setter để
+ * tầng trên cập nhật lạc quan, và cung cấp hàm refetch để tải lại sau các thao tác ghi.
  */
 
 import { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
 import { Task, Project, User, TimeEntry, Notification } from '../../types';
 
-/** Hook fetch & map dữ liệu DB → model frontend */
+/**
+ * Hook tải và chuẩn hoá dữ liệu chính từ Supabase cho toàn ứng dụng.
+ * @param isAuth Cờ đã đăng nhập; chỉ khi true mới thực hiện tải dữ liệu.
+ * @param user Người dùng hiện tại, dùng để lọc thông báo và làm mới profile của chính họ.
+ * @param setUser Setter để đồng bộ lại profile người dùng hiện tại theo dữ liệu vừa tải.
+ * @param setIsLoading Setter bật/tắt trạng thái loading toàn cục trong lúc tải.
+ * @param addToast Hàm hiển thị toast khi tải dữ liệu thất bại.
+ * @returns Các state dữ liệu kèm setter tương ứng và hàm `refetch` để tải lại toàn bộ.
+ */
 export const useDataFetching = (
   isAuth: boolean, 
   user: User, 
@@ -22,6 +32,13 @@ export const useDataFetching = (
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  /**
+   * Tải tuần tự toàn bộ dữ liệu cần thiết từ Supabase rồi map sang model frontend:
+   * bảng users (kèm đồng bộ lại profile người đang đăng nhập), bảng projects ghép với
+   * project_members để dựng danh sách thành viên theo project, bảng tasks kèm quan hệ subtasks và
+   * comments sắp xếp mới nhất trước, bảng time_entries, và bảng notifications lọc theo user hiện tại.
+   * Bật loading khi bắt đầu, luôn tắt loading ở cuối; nếu lỗi thì ghi log và hiện toast lỗi.
+   */
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -144,6 +161,11 @@ export const useDataFetching = (
     }
   };
 
+  /**
+   * Kích hoạt tải dữ liệu khi người dùng đã đăng nhập và đã biết id của họ.
+   * Chạy lại mỗi khi trạng thái đăng nhập hoặc id người dùng thay đổi (đăng nhập tài khoản khác).
+   * Không có cleanup.
+   */
   useEffect(() => {
     if (isAuth && user.id) {
       fetchData();

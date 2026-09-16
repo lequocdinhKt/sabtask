@@ -1,7 +1,8 @@
 /**
- * File: ChannelSidebar.tsx
- * Trách nhiệm: Sidebar kênh chat/voice trong Team Hub.
- * Liên quan: TeamHub.tsx, types/models.ts (Channel).
+ * File: components/team-hub/ChannelSidebar.tsx
+ * Mục đích: Sidebar của Team Hub, hiển thị danh sách kênh text và kênh voice để chọn kênh đang xem,
+ * cho phép tài khoản ADMIN tạo kênh mới hoặc xoá kênh, liệt kê thành viên đang kết nối trong kênh
+ * voice và hiện thẻ thông tin người dùng hiện tại ở cuối sidebar.
  */
 
 import React, { useState } from 'react';
@@ -20,7 +21,7 @@ interface ChannelSidebarProps {
     mobileView: 'list' | 'chat';
 }
 
-/** Sidebar danh sách kênh text/voice và tạo kênh mới */
+/** Component sidebar kênh: render nhóm kênh text, nhóm kênh voice, form tạo kênh cho ADMIN và trượt vào/ra trên mobile theo mobileView. */
 export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
     channels, activeChannelId, onSelect, users, currentUser, 
     onCreateChannel, onDeleteChannel, mobileView 
@@ -33,6 +34,7 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
   const [newChannelName, setNewChannelName] = useState('');
   const [newChannelType, setNewChannelType] = useState<'TEXT' | 'VOICE'>('TEXT');
 
+  /** Xử lý submit form tạo kênh: chặn reload trang, bỏ qua khi tên trống, gọi onCreateChannel rồi xoá nội dung và đóng form. */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChannelName.trim()) return;
@@ -47,7 +49,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
         md:relative md:w-64 md:translate-x-0
         ${mobileView === 'list' ? 'translate-x-0' : '-translate-x-full'}
       `}>
-          {/* Sidebar Header */}
           <div className="p-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between h-16 bg-slate-50 dark:bg-slate-900">
               <h2 className="font-bold text-slate-700 dark:text-slate-200">{t('channels')}</h2>
               {isAdmin && (
@@ -63,7 +64,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
           
           <div className="flex-1 overflow-y-auto p-3 space-y-6">
               
-              {/* Creator Form (Admin Only) */}
               {isCreatingChannel && (
                   <div className="mb-4 bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in slide-in-from-top-2">
                       <form onSubmit={handleSubmit} className="space-y-3">
@@ -98,7 +98,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   </div>
               )}
 
-              {/* Text Channels */}
               <div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">{t('channels')}</h3>
                   <div className="space-y-1">
@@ -125,7 +124,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                   </div>
               </div>
 
-              {/* Voice Channels */}
               <div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">{t('voiceRooms')}</h3>
                   <div className="space-y-1">
@@ -147,7 +145,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
                                     <Trash2 size={14} />
                                 </button>
                             )}
-                            {/* Connected Users List */}
                             {(channel.connectedUserIds?.length || 0) > 0 && (
                                 <div className="ml-8 mt-1 space-y-1 pb-1">
                                     {channel.connectedUserIds?.map(uid => {
@@ -167,7 +164,6 @@ export const ChannelSidebar: React.FC<ChannelSidebarProps> = ({
               </div>
           </div>
           
-          {/* User Bar */}
           <div className="p-3 bg-slate-100 dark:bg-slate-800 flex items-center gap-3">
               <div className="relative">
                   <img src={currentUser.avatar} className="w-9 h-9 rounded-full border-2 border-white dark:border-slate-700 object-cover" />

@@ -1,14 +1,14 @@
 /**
- * File: ProjectStats.tsx
- * Trách nhiệm: Thống kê project — progress, task counts, members.
- * Liên quan: ProjectDetailView.tsx.
+ * File: components/project-detail/ProjectStats.tsx
+ * Mục đích: Hàng thống kê tổng quan của trang chi tiết dự án, gồm phần trăm tiến độ,
+ * số task đã hoàn thành trên tổng số, số task đang thực hiện và avatar các thành viên dự án.
  */
 
 import React from 'react';
 import { ProjectStatsProps } from '../../types';
 import { BarChart3, CheckCircle2, Clock } from 'lucide-react';
 
-/** Hàng stats progress, completed, in-progress và members */
+/** Component hiển thị các chỉ số tổng quan của dự án và danh sách avatar thành viên. */
 export const ProjectStats: React.FC<ProjectStatsProps> = ({ progress, completed, total, inProgress, members }) => {
   return (
     <div className="flex items-center gap-8 mt-6 pb-6 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">

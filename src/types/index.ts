@@ -1,7 +1,7 @@
 /**
- * File: index.ts
- * Trách nhiệm: Barrel export gom enums / models / ui / props cho import gọn.
- * Liên quan: toàn bộ src/ import từ '../types' hoặc '../../types'.
+ * File: types/index.ts
+ * Mục đích: Điểm export tập trung (barrel) cho toàn bộ kiểu dữ liệu của SabTask,
+ * gom lại các enum, model domain, kiểu UI và kiểu props để nơi khác chỉ cần import từ 'types'.
  */
 
 export * from './enums';

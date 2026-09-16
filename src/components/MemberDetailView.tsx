@@ -1,7 +1,8 @@
 /**
- * File: MemberDetailView.tsx
- * Trách nhiệm: Chi tiết thành viên — profile, task được giao, thống kê.
- * Liên quan: TaskListView, TeamView, useAppLogic.
+ * File: components/MemberDetailView.tsx
+ * Mục đích: Trang chi tiết của một thành viên, gồm hồ sơ cá nhân, thống kê hiệu suất (tổng task,
+ * đã hoàn thành, đang làm, tỉ lệ hoàn thành) và danh sách task được giao có thể tìm kiếm/lọc.
+ * View cũng cung cấp lối vào chỉnh sửa hoặc xoá thành viên.
  */
 
 import React, { useState, useMemo } from 'react';
@@ -13,40 +14,41 @@ import { Card } from './ui/Card';
 import { TaskListView } from './TaskListView';
 import { useApp } from '../context/AppContext';
 
-/** View chi tiết member với danh sách task và stats */
+/** Component chính hiển thị hồ sơ, chỉ số hiệu suất và danh sách task của một thành viên. */
 export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
   member, tasks, projects, onBack, onEditMember, onDeleteMember, onEditTask, onUpdateTaskStatus 
 }) => {
   const { state } = useApp();
   const { t } = state;
-  // Local Filter State to make the TaskListView interactive
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     priority: 'ALL',
     assigneeId: 'ALL'
   });
 
-  // Filter tasks for this specific member and apply local filters
+  /**
+   * useMemo lọc ra danh sách task hiển thị: chỉ giữ task được giao cho thành viên này, sau đó áp
+   * thêm bộ lọc cục bộ theo từ khoá tìm kiếm (tiêu đề, mô tả) và theo mức độ ưu tiên.
+   * Tính lại mỗi khi danh sách task, thành viên đang xem hoặc bộ lọc thay đổi.
+   */
   const memberTasks = useMemo(() => {
+    /** Điều kiện lọc cho từng task: đúng người được giao, khớp từ khoá và khớp mức ưu tiên. */
     return tasks.filter(t => {
-        // First ensure it belongs to the member
         if (t.assigneeId !== member.id) return false;
 
-        // Search Filter
         const searchMatch = 
           t.title.toLowerCase().includes(filters.search.toLowerCase()) || 
           t.description.toLowerCase().includes(filters.search.toLowerCase());
         
         if (!searchMatch) return false;
 
-        // Priority Filter
         if (filters.priority !== 'ALL' && t.priority !== filters.priority) return false;
 
         return true;
     });
   }, [tasks, member.id, filters]);
   
-  // Stats
+  /** Thống kê hiệu suất của thành viên: tổng task, số đã xong, số đang làm và tỉ lệ hoàn thành (%). */
   const allMemberTasks = tasks.filter(t => t.assigneeId === member.id);
   const totalTasks = allMemberTasks.length;
   const completedTasks = allMemberTasks.filter(t => t.status === TaskStatus.DONE).length;
@@ -61,7 +63,6 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
         </button>
         
         <div className="flex flex-col xl:flex-row gap-8">
-            {/* Profile Sidebar */}
             <div className="xl:w-[350px] space-y-6 flex-shrink-0">
                 <Card className="flex flex-col items-center text-center p-8">
                     <div className="relative mb-4">
@@ -145,7 +146,6 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                 </Card>
             </div>
 
-            {/* Main Content */}
             <div className="flex-1 space-y-6 min-w-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card className="flex items-center gap-4 bg-gradient-to-br from-indigo-500 to-violet-600 text-white border-none">
@@ -175,11 +175,10 @@ export const MemberDetailView: React.FC<MemberDetailViewProps> = ({
                         <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t('assignedTasks')}</h3>
                         <Badge variant="neutral">{memberTasks.length} {t('tasks')}</Badge>
                     </div>
-                    {/* Reuse TaskListView with functional filters */}
                     <div className="p-4">
                         <TaskListView 
                             tasks={memberTasks} 
-                            users={[member]} // Only show current member in filter dropdown
+                            users={[member]}
                             projects={projects}
                             filters={filters}
                             setFilters={setFilters} 

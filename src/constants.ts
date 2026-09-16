@@ -1,20 +1,20 @@
 /**
  * File: constants.ts
- * Trách nhiệm: Hằng số cấu hình UI và dữ liệu mock phụ (chart).
- * Liên quan: Sidebar (NAV_CONFIG), KanbanBoard (KANBAN_COLUMNS).
- * Auth: xem constants/demoUsers.ts + Supabase Auth (không hardcode password).
+ * Mục đích: Tập hợp các hằng số cấu hình giao diện của SabTask (menu điều hướng, cột Kanban,
+ * bảng màu biểu đồ/trạng thái) và một ít dữ liệu mock dùng cho demo dashboard.
+ * File cũng re-export các hằng số tài khoản demo từ constants/demoUsers.ts để component import một nơi.
  */
 
 import { NavItemConfig, TaskStatus, Task, Priority } from './types';
 import { DEMO_USER_IDS } from './constants/demoUsers';
 
+/** Re-export hằng số tài khoản demo để các module khác chỉ cần import từ constants.ts. */
 export { GUEST_USER, DEMO_USER_IDS, DEMO_USER_PROFILES } from './constants/demoUsers';
 
-/** @deprecated dùng GUEST_USER — giữ alias để tránh import cũ gãy tạm thời */
+/** Alias cũ của GUEST_USER, giữ lại cho các import trước đây; nên dùng GUEST_USER thay thế. */
 export { GUEST_USER as CURRENT_USER } from './constants/demoUsers';
 
-// --- UI CONFIGURATION ---
-
+/** Danh sách mục menu điều hướng bên trái, dùng để render Sidebar và xác định tab đang mở. */
 export const NAV_CONFIG: NavItemConfig[] = [
   { id: 'dashboard', iconId: 'dashboard', label: 'Overview' },
   { id: 'projects', iconId: 'folder', label: 'Projects' },
@@ -26,6 +26,7 @@ export const NAV_CONFIG: NavItemConfig[] = [
   { id: 'team', iconId: 'team', label: 'Team Members' },
 ];
 
+/** Cấu hình 4 cột của bảng Kanban (trạng thái, tiêu đề và lớp CSS màu sắc tương ứng). */
 export const KANBAN_COLUMNS = [
   { 
       id: TaskStatus.TODO, 
@@ -57,6 +58,7 @@ export const KANBAN_COLUMNS = [
   },
 ];
 
+/** Bảng mã màu dùng cho các biểu đồ ở Dashboard. */
 export const CHART_COLORS = {
   purple: '#EC4899',
   pink: '#10B981',
@@ -66,6 +68,7 @@ export const CHART_COLORS = {
   slate: '#E5E7EB'
 };
 
+/** Ánh xạ từng trạng thái task sang mã màu, dùng cho biểu đồ tròn và badge trạng thái. */
 export const STATUS_COLORS = {
   [TaskStatus.TODO]: '#9CA3AF',
   [TaskStatus.IN_PROGRESS]: '#EC4899',
@@ -73,6 +76,7 @@ export const STATUS_COLORS = {
   [TaskStatus.DONE]: '#10B981',
 };
 
+/** Dữ liệu mock số task theo từng ngày trong tuần, dùng minh hoạ biểu đồ xu hướng ở Dashboard. */
 export const DASHBOARD_TREND_DATA = [
   { day: 'Mon', tasks: 12 },
   { day: 'Tue', tasks: 18 },
@@ -83,7 +87,7 @@ export const DASHBOARD_TREND_DATA = [
   { day: 'Sun', tasks: 10 },
 ];
 
-/** Mock tasks chỉ dùng cho UI demo phụ (không phải auth) */
+/** Danh sách task mock (không lưu database), chỉ dùng để demo giao diện khi chưa có dữ liệu thật. */
 export const MOCK_TASKS: Task[] = [
   {
     id: 't1',

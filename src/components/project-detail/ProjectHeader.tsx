@@ -1,7 +1,7 @@
 /**
- * File: ProjectHeader.tsx
- * Trách nhiệm: Header trang chi tiết project — tên, back, edit, delete.
- * Liên quan: ProjectDetailView.tsx.
+ * File: components/project-detail/ProjectHeader.tsx
+ * Mục đích: Phần đầu trang chi tiết dự án, hiển thị nút quay lại danh sách dự án, tên và
+ * mô tả dự án kèm badge trạng thái, cùng hai nút sửa và xoá dự án.
  */
 
 import React from 'react';
@@ -11,7 +11,7 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { useApp } from '../../context/AppContext';
 
-/** Header chi tiết project với nút quay lại và actions */
+/** Component header trang chi tiết dự án: thông tin dự án và các hành động quay lại, sửa, xoá. */
 export const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project, onBack, onEdit, onDelete }) => {
   const { state } = useApp();
   const { t } = state;

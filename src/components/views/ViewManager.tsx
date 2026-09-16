@@ -1,7 +1,8 @@
 /**
- * File: ViewManager.tsx
- * Trách nhiệm: Router view nội bộ — chuyển giữa dashboard, kanban, projects, ...
- * Liên quan: AppContext (activeTab), tất cả view components.
+ * File: components/views/ViewManager.tsx
+ * Mục đích: Bộ định tuyến view nội bộ của ứng dụng. Dựa vào tab đang chọn trong context,
+ * file này chọn và render đúng màn hình (dashboard, projects, kanban, list, calendar,
+ * team hub, team, time tracking) và truyền dữ liệu cùng các action tương ứng xuống view đó.
  */
 
 import React from 'react';
@@ -17,13 +18,15 @@ import { TimeTrackingView } from '../TimeTrackingView';
 import { MemberDetailView } from '../MemberDetailView';
 import { TeamHub } from '../TeamHub';
 
-/** Quản lý render view theo activeTab từ context */
+/**
+ * Component điều phối view: chọn màn hình theo tab hiện tại, đồng thời ưu tiên render
+ * màn hình chi tiết khi đang có project hoặc thành viên được chọn.
+ */
 export const ViewManager: React.FC = () => {
   const { state, actions } = useApp();
   
   switch (state.activeTab) {
     case 'dashboard':
-      // Passing filtered tasks so search bar works on Dashboard too
       return <div className="max-w-[1600px] mx-auto"><Dashboard tasks={state.tasks} projects={state.projects} onNavigate={actions.setActiveTab} /></div>;
       
     case 'projects':
@@ -32,7 +35,7 @@ export const ViewManager: React.FC = () => {
            <div className="max-w-[1600px] mx-auto">
              <ProjectDetailView 
                 project={state.selectedProject}
-                tasks={state.tasks} // Use filtered tasks
+                tasks={state.tasks}
                 users={state.users}
                 onBack={actions.handleBackToProjects}
                 onEditProject={actions.openEditProjectModal}
@@ -48,7 +51,7 @@ export const ViewManager: React.FC = () => {
         <div className="max-w-[1600px] mx-auto">
           <ProjectsView 
              projects={state.projects}
-             tasks={state.tasks} // Use filtered tasks
+             tasks={state.tasks}
              users={state.users}
              onCreateProject={actions.openNewProjectModal}
              onEditProject={actions.openEditProjectModal}

@@ -1,7 +1,8 @@
 /**
- * File: ProjectModal.tsx
- * Trách nhiệm: Modal tạo/sửa dự án.
- * Liên quan: project-modal/ProjectForm.tsx, useEntityOperations.
+ * File: components/ProjectModal.tsx
+ * Mục đích: Hộp thoại dùng chung cho việc tạo dự án mới hoặc sửa dự án đang có.
+ * File chỉ lo phần khung modal (lớp phủ, tiêu đề, vùng cuộn) còn nội dung nhập liệu
+ * được giao cho ProjectForm; modal không render gì khi đang ở trạng thái đóng.
  */
 
 import React from 'react';
@@ -10,7 +11,7 @@ import { ModalHeader } from './ui/ModalHeader';
 import { ProjectForm } from './project-modal/ProjectForm';
 import { useApp } from '../context/AppContext';
 
-/** Modal wrapper cho form tạo/sửa project */
+/** Component khung modal bao quanh form tạo/sửa dự án, đổi tiêu đề theo chế độ tạo mới hay chỉnh sửa. */
 export const ProjectModal: React.FC<ProjectModalProps> = ({
   isOpen, onClose, project, users, onSave 
 }) => {

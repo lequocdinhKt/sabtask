@@ -1,7 +1,6 @@
 /**
- * File: StatusDonutChart.tsx
- * Trách nhiệm: Biểu đồ donut phân bố task theo trạng thái.
- * Liên quan: useDashboardData.ts, constants.ts (STATUS_COLORS).
+ * File: components/dashboard/StatusDonutChart.tsx
+ * Mục đích: Biểu đồ donut (recharts) thể hiện tỷ lệ task theo từng trạng thái trên Dashboard. Hiển thị tổng số task ở giữa vòng tròn và phần chú giải kèm phần trăm bên dưới; màu sắc và tooltip đổi theo chế độ sáng/tối.
  */
 
 import React from 'react';
@@ -10,7 +9,11 @@ import { StatusDonutChartProps } from '../../types';
 import { Card } from '../ui/Card';
 import { useApp } from '../../context/AppContext';
 
-/** Donut chart phân bố task theo status */
+/**
+ * Render donut chart trạng thái task và phần chú giải phần trăm tương ứng.
+ * @param data Mảng dữ liệu từng trạng thái, mỗi phần tử gồm name, value và color.
+ * @param totalTasks Tổng số task, dùng làm số hiển thị ở tâm biểu đồ và mẫu số tính phần trăm.
+ */
 export const StatusDonutChart: React.FC<StatusDonutChartProps> = ({ data, totalTasks }) => {
   const { state } = useApp();
   const { t, darkMode } = state;

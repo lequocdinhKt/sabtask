@@ -1,7 +1,9 @@
 /**
- * File: useAppLogic.ts
- * Trách nhiệm: Facade gom state/actions (Supabase Auth, UI, data, CRUD, search, timer).
- * Liên quan: AppContext.tsx, LoginScreen, ViewManager / ModalManager.
+ * File: hooks/useAppLogic.ts
+ * Mục đích: Hook facade trung tâm của ứng dụng, gom toàn bộ state và actions từ các module con
+ * (UI state, fetch dữ liệu Supabase, tìm kiếm, bấm giờ, CRUD entity) thành một đối tượng duy nhất
+ * cho AppContext. Đồng thời quản lý phiên đăng nhập Supabase Auth, đồng bộ profile trong bảng
+ * public.users và lắng nghe realtime bảng notifications của người dùng hiện tại.
  */
 
 import { useState, useEffect } from 'react';
@@ -15,6 +17,11 @@ import { useSearchSystem } from './modules/useSearchSystem';
 import { useTimeTracking } from './modules/useTimeTracking';
 import { useEntityOperations } from './modules/useEntityOperations';
 
+/**
+ * Chuyển một bản ghi thô của bảng public.users thành model User của frontend.
+ * @param row Dữ liệu dòng trả về từ Supabase (snake_case).
+ * @returns Đối tượng User đã chuẩn hoá kiểu dữ liệu (camelCase).
+ */
 const mapProfile = (row: Record<string, unknown>): User => ({
   id: String(row.id),
   name: String(row.name ?? ''),
@@ -24,6 +31,11 @@ const mapProfile = (row: Record<string, unknown>): User => ({
   email: row.email ? String(row.email) : undefined,
 });
 
+/**
+ * Chuyển một bản ghi thô của bảng notifications thành model Notification của frontend.
+ * @param row Dữ liệu dòng lấy từ truy vấn hoặc từ payload realtime.
+ * @returns Đối tượng Notification đã chuẩn hoá kiểu dữ liệu.
+ */
 const mapNotification = (row: Record<string, unknown>): Notification => ({
   id: String(row.id),
   userId: String(row.user_id),
@@ -35,7 +47,11 @@ const mapNotification = (row: Record<string, unknown>): Notification => ({
   taskId: row.task_id ? String(row.task_id) : undefined,
 });
 
-/** Hook trung tâm: Auth session → profile → data/CRUD */
+/**
+ * Hook chính điều phối toàn bộ logic ứng dụng: xác thực, tải dữ liệu, CRUD, tìm kiếm, hẹn giờ.
+ * @returns Đối tượng gồm `state` (dữ liệu và trạng thái UI để render) và `actions` (các hàm xử lý
+ * sự kiện cho toàn bộ màn hình và modal).
+ */
 export const useAppLogic = () => {
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [authReady, setAuthReady] = useState<boolean>(false);
@@ -51,7 +67,13 @@ export const useAppLogic = () => {
     ui.actions.addToast
   );
 
-  /** Load profile public.users từ auth user id */
+  /**
+   * Đọc profile trong bảng public.users theo id của Auth user rồi đưa vào state `user`.
+   * Nếu chưa có dòng profile tương ứng thì dựng tạm một user từ GUEST_USER và email đăng nhập.
+   * Luôn đánh dấu đã đăng nhập ở cuối hàm.
+   * @param authUserId Id người dùng lấy từ Supabase Auth.
+   * @param email Email của phiên đăng nhập, dùng làm tên tạm khi thiếu profile.
+   */
   const loadProfile = async (authUserId: string, email?: string | null) => {
     const { data: profile, error } = await supabase
       .from('users')
@@ -76,10 +98,16 @@ export const useAppLogic = () => {
     setIsAuth(true);
   };
 
-  /** Restore session + lắng nghe Auth state */
+  /**
+   * Khởi tạo phiên làm việc một lần khi mount: lấy session hiện có của Supabase Auth để tự động
+   * đăng nhập lại, sau đó bật cờ `authReady` để App biết đã kiểm tra xong. Đồng thời đăng ký
+   * listener onAuthStateChange nhằm cập nhật state khi đăng nhập, làm mới token hoặc đăng xuất.
+   * Cleanup: đánh dấu unmount để bỏ qua cập nhật muộn và huỷ đăng ký listener.
+   */
   useEffect(() => {
     let mounted = true;
 
+    /** Đọc session đang có của Supabase Auth và đặt state đăng nhập tương ứng cho lần mount đầu. */
     const init = async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
@@ -113,7 +141,12 @@ export const useAppLogic = () => {
     };
   }, []);
 
-  /** Realtime notifications cho user hiện tại */
+  /**
+   * Đăng ký kênh realtime Supabase để đồng bộ danh sách thông báo của người dùng hiện tại.
+   * Chạy lại mỗi khi trạng thái đăng nhập hoặc id người dùng thay đổi, và bỏ qua khi chưa đăng nhập.
+   * Thêm, sửa hoặc xoá bản ghi trong bảng notifications sẽ được áp trực tiếp vào state notifications.
+   * Cleanup: rời kênh realtime để tránh trùng subscription.
+   */
   useEffect(() => {
     if (!isAuth || !user.id) return;
 
@@ -148,8 +181,10 @@ export const useAppLogic = () => {
   }, [isAuth, user.id]);
 
   /**
-   * Đăng nhập qua Supabase Auth (email/password).
-   * @returns true nếu thành công
+   * Đăng nhập bằng email và mật khẩu qua Supabase Auth, nạp profile ngay khi thành công.
+   * @param email Email đăng nhập, được cắt khoảng trắng hai đầu.
+   * @param password Mật khẩu người dùng nhập.
+   * @returns true nếu đăng nhập thành công, false nếu Supabase trả về lỗi.
    */
   const handleLogin = async (email: string, password: string): Promise<boolean> => {
     const { data: signInData, error } = await supabase.auth.signInWithPassword({
@@ -164,13 +199,17 @@ export const useAppLogic = () => {
     return true;
   };
 
-  /** Đăng xuất Supabase + clear state */
+  /** Đăng xuất khỏi Supabase Auth và đưa state về trạng thái khách chưa đăng nhập. */
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsAuth(false);
     setUser(GUEST_USER);
   };
 
+  /**
+   * Lưu task qua tầng CRUD rồi đóng modal và xoá task đang chỉnh sửa nếu lưu thành công.
+   * Trạng thái `editingTask` được dùng để phân biệt tạo mới và cập nhật.
+   */
   const handleTaskSaveWrapper = async (task: Task) => {
     const success = await ops.handleTaskSave(task, !!ui.state.editingTask);
     if (success) {
@@ -179,6 +218,7 @@ export const useAppLogic = () => {
     }
   };
 
+  /** Xoá task qua tầng CRUD, chỉ đóng modal task khi xoá thành công. */
   const handleTaskDeleteWrapper = async (taskId: string) => {
     const success = await ops.handleTaskDelete(taskId);
     if (success) {
@@ -187,6 +227,10 @@ export const useAppLogic = () => {
     }
   };
 
+  /**
+   * Lưu project qua tầng CRUD rồi đóng modal project khi thành công.
+   * Trạng thái `editingProject` được dùng để phân biệt tạo mới và cập nhật.
+   */
   const handleProjectSaveWrapper = async (project: Project) => {
     const success = await ops.handleProjectSave(project, !!ui.state.editingProject);
     if (success) {
@@ -195,6 +239,7 @@ export const useAppLogic = () => {
     }
   };
 
+  /** Xoá project và thoát khỏi màn hình chi tiết nếu project vừa xoá đang được chọn. */
   const handleProjectDeleteWrapper = async (projectId: string) => {
     const success = await ops.handleProjectDelete(projectId);
     if (success && ui.state.selectedProject?.id === projectId) {
@@ -202,6 +247,7 @@ export const useAppLogic = () => {
     }
   };
 
+  /** Lưu thông tin thành viên qua tầng CRUD rồi đóng modal thành viên khi thành công. */
   const handleMemberSaveWrapper = async (member: User) => {
     const success = await ops.handleMemberSave(member, !!ui.state.editingMember);
     if (success) {
@@ -210,6 +256,11 @@ export const useAppLogic = () => {
     }
   };
 
+  /**
+   * Điều hướng ứng dụng tới đối tượng vừa được chọn trong kết quả tìm kiếm toàn cục: mở tab
+   * project, mở modal task, mở tab thành viên, hoặc mở task chứa bình luận tương ứng.
+   * Sau khi điều hướng thì dọn danh sách kết quả để đóng dropdown tìm kiếm.
+   */
   const handleSearchResultClick = (result: SearchResult) => {
      switch (result.type) {
        case 'PROJECT':
@@ -236,11 +287,19 @@ export const useAppLogic = () => {
      search.setGlobalSearchResults([]);
   };
 
+  /**
+   * Đánh dấu một thông báo là đã đọc: cập nhật lạc quan trên state trước, sau đó ghi cột `read`
+   * của bảng notifications trên Supabase.
+   */
   const markNotificationAsRead = async (id: string) => {
     data.setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     await supabase.from('notifications').update({ read: true }).eq('id', id);
   };
 
+  /**
+   * Đánh dấu toàn bộ thông báo của người dùng hiện tại là đã đọc: cập nhật lạc quan trên state
+   * trước, sau đó ghi tất cả dòng notifications thuộc user này trên Supabase.
+   */
   const markAllNotificationsAsRead = async () => {
     data.setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     await supabase.from('notifications').update({ read: true }).eq('user_id', user.id);
@@ -264,15 +323,18 @@ export const useAppLogic = () => {
 
       handleTaskSave: handleTaskSaveWrapper,
       handleTaskDelete: handleTaskDeleteWrapper,
+      /** Đổi trạng thái task: cập nhật lạc quan state trước rồi ghi xuống Supabase. */
       handleUpdateTaskStatus: (id: string, s: TaskStatus) => {
           data.setTasks(prev => prev.map(t => t.id === id ? { ...t, status: s } : t));
           ops.handleUpdateTaskStatus(id, s);
       },
+      /** Mở modal tạo task mới với trạng thái khởi tạo theo cột Kanban được bấm. */
       openNewTaskModal: (status?: TaskStatus) => {
           ui.actions.setEditingTask(null);
           ui.actions.setNewTaskStatus(status || TaskStatus.TODO);
           ui.actions.setTaskModalOpen(true);
       },
+      /** Mở modal task ở chế độ chỉnh sửa với dữ liệu task được chọn. */
       openEditTaskModal: (task: Task) => {
           ui.actions.setEditingTask(task);
           ui.actions.setTaskModalOpen(true);
