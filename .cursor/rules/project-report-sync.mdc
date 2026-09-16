@@ -1,0 +1,468 @@
+---
+description: Đồng bộ PROJECT_REPORT_INFO.md với source code thực tế của SabTask sau mọi thay đổi có ảnh hưởng đến báo cáo, kiến trúc, chức năng, database hoặc công nghệ.
+alwaysApply: true
+---
+
+# SABTASK PROJECT REPORT SYNC RULE
+
+## 1. Mục tiêu
+
+File `PROJECT_REPORT_INFO.md` ở thư mục root là tài liệu kỹ thuật trung tâm dùng để viết:
+
+- Báo cáo thực tập
+- Chương 2: Kiến thức tổng quan
+- Chương 3: Phân tích và xây dựng hệ thống
+- Chương 4: Kết luận và hướng phát triển
+- Tài liệu mô tả kiến trúc
+- Tài liệu chức năng
+- Tài liệu thuật toán
+- Tài liệu database
+
+Mọi thay đổi source code có ảnh hưởng đến nội dung của tài liệu này PHẢI được phản ánh vào `PROJECT_REPORT_INFO.md`.
+
+Không được để source code và `PROJECT_REPORT_INFO.md` mâu thuẫn với nhau.
+
+
+# 2. Nguyên tắc bắt buộc
+
+Sau khi sửa code, trước khi kết thúc task, Agent PHẢI tự hỏi:
+
+> "Thay đổi vừa thực hiện có làm thay đổi bất kỳ thông tin nào trong PROJECT_REPORT_INFO.md hay không?"
+
+Nếu CÓ:
+- phải cập nhật `PROJECT_REPORT_INFO.md` trong cùng task.
+
+Nếu KHÔNG:
+- không chỉnh file chỉ để thay đổi câu chữ không cần thiết.
+
+
+# 3. Những loại thay đổi bắt buộc phải cập nhật PROJECT_REPORT_INFO.md
+
+## 3.1. Chức năng
+
+Nếu thêm, sửa, xóa hoặc hoàn thiện một feature như:
+
+- Login
+- Logout
+- Project
+- Task
+- Subtask
+- Comment
+- Kanban
+- Search
+- Filter
+- Calendar
+- Dashboard
+- Team
+- Profile
+- Notification
+- Time Tracking
+- Team Hub
+- AI
+- Authentication
+- Authorization
+- Theme
+- Language
+- File upload
+- Realtime
+- Chat
+- Voice
+- hoặc bất kỳ feature mới nào
+
+thì phải kiểm tra và cập nhật tối thiểu:
+
+- Phạm vi project
+- Danh sách chức năng
+- Mô tả chức năng
+- Yêu cầu chức năng
+- Module liên quan
+- Hạn chế
+- Hướng phát triển
+- Tóm tắt dự án
+
+
+# 4. Database
+
+Nếu thay đổi:
+
+- table
+- column
+- enum
+- foreign key
+- relationship
+- index
+- trigger
+- RLS
+- policy
+- migration
+- seed
+- storage
+
+thì phải cập nhật các phần liên quan trong `PROJECT_REPORT_INFO.md`.
+
+Đặc biệt kiểm tra:
+
+- Danh sách bảng
+- Các trường quan trọng
+- Quan hệ giữa bảng
+- Dữ liệu lưu trữ
+- Authentication
+- Authorization
+- Kiến trúc hệ thống
+- Hạn chế bảo mật
+
+
+# 5. Công nghệ và dependency
+
+Nếu:
+
+- thêm package
+- xóa package
+- đổi framework
+- đổi SDK
+- đổi API
+- đổi model AI
+- đổi database
+- đổi authentication provider
+- đổi storage provider
+- đổi build tool
+
+thì phải cập nhật phần:
+
+- Ngôn ngữ
+- Frontend
+- Backend
+- Database
+- Authentication
+- Storage
+- External API
+- Libraries
+- Build/deployment
+- Kiến trúc
+- File quan trọng
+- Tóm tắt dự án
+
+
+# 6. AI
+
+Mọi thay đổi liên quan AI phải cập nhật tài liệu.
+
+Ví dụ:
+
+- đổi provider AI
+- đổi model
+- thêm prompt
+- thêm AI feature
+- sửa AI parsing
+- thêm fallback
+- thêm AI chat
+- thêm AI priority
+- thêm AI subtasks
+- thêm AI recommendation
+
+Phải ghi chính xác:
+
+- Provider
+- SDK
+- Model
+- Input
+- Output
+- File source
+- Env variable
+- Fallback
+- Trạng thái feature
+
+Không được giữ thông tin AI cũ nếu code đã thay đổi.
+
+Ví dụ:
+
+Nếu project đã dùng Groq thì KHÔNG được tiếp tục mô tả Gemini.
+
+
+# 7. Thuật toán và xử lý dữ liệu
+
+Khi thêm hoặc sửa logic đáng kể, Agent phải xác định đó có phải:
+
+- thuật toán
+- quy trình xử lý
+- scoring
+- ranking
+- filtering
+- sorting
+- aggregation
+- recommendation
+- state transition
+- optimistic update
+- time calculation
+- date calculation
+- AI processing pipeline
+
+hay không.
+
+Nếu có giá trị cho báo cáo, thêm hoặc cập nhật thông tin trong `PROJECT_REPORT_INFO.md`.
+
+Phải phân biệt rõ:
+
+## Thuật toán do project tự triển khai
+
+Ví dụ:
+
+- Search scoring
+- Filter đa điều kiện
+- Priority scoring
+- Project progress calculation
+- Ranking
+
+với:
+
+## Thư viện / dịch vụ bên ngoài
+
+Ví dụ:
+
+- Groq model
+- Supabase
+- date-fns
+
+Không gọi mô hình AI bên ngoài là "thuật toán do SabTask xây dựng".
+
+
+# 8. Kiến trúc
+
+Nếu thay đổi luồng:
+
+Frontend
+→ Service
+→ Database
+
+hoặc thêm:
+
+- Backend
+- Edge Function
+- API
+- Worker
+- Queue
+- Realtime
+- Storage
+
+thì phải sửa phần kiến trúc.
+
+Không được mô tả thành phần không còn tồn tại.
+
+
+# 9. File source
+
+Nếu:
+
+- rename file
+- move file
+- split module
+- merge module
+- tạo service mới
+- xóa service
+- thay đường dẫn component/hook/service
+
+thì phải cập nhật danh sách file liên quan trong báo cáo.
+
+Không để tài liệu tham chiếu file đã bị xóa.
+
+
+# 10. Trạng thái chức năng
+
+Mỗi feature phải được mô tả đúng một trong các trạng thái phù hợp:
+
+- Đã hoàn thành
+- Đã hoàn thành ở mức MVP
+- Đang phát triển
+- Chỉ có UI
+- Mock
+- Chưa persist database
+- Chưa hoàn thành
+- Dead code
+- Chưa triển khai
+
+Không được ghi "Đã hoàn thành" chỉ vì giao diện đã tồn tại.
+
+
+# 11. Hạn chế
+
+Khi một hạn chế được sửa:
+
+Ví dụ:
+
+- chuyển demo auth → Supabase Auth
+- RLS public → authenticated policies
+- Team Hub local → database
+- mock notification → realtime
+- thêm automated tests
+
+thì phải XÓA hoặc chỉnh lại hạn chế cũ.
+
+Không được giữ hạn chế đã được giải quyết.
+
+
+# 12. Hướng phát triển
+
+Nếu một mục trong "Hướng phát triển" đã được implement:
+
+KHÔNG được tiếp tục để nó dưới dạng "đề xuất".
+
+Phải:
+
+1. Chuyển nó thành chức năng hiện tại.
+2. Cập nhật trạng thái.
+3. Cập nhật kiến trúc/database nếu có.
+4. Xóa nó khỏi danh sách chưa triển khai nếu không còn đúng.
+
+
+# 13. Không được bịa thông tin
+
+`PROJECT_REPORT_INFO.md` phải phản ánh source code thực tế.
+
+Không được tự suy đoán:
+
+- Công ty
+- KPI
+- Thời gian thực tập
+- Sprint
+- Deployment
+- Số user
+- Hiệu năng
+- SLA
+- Kết quả thực nghiệm
+- Công nghệ không có trong repo
+
+Nếu không đủ bằng chứng, ghi:
+
+"Chưa đủ thông tin để xác định."
+
+
+# 14. Không ghi secret
+
+Tuyệt đối không ghi giá trị thực của:
+
+- API key
+- password
+- token
+- service_role key
+- JWT secret
+- database password
+- credentials
+
+Chỉ ghi tên biến môi trường.
+
+Ví dụ:
+
+ĐÚNG:
+
+`GROQ_API_KEY`
+
+SAI:
+
+`GROQ_API_KEY=gsk_xxxxxxxxx`
+
+
+# 15. Không rewrite toàn bộ file không cần thiết
+
+Khi cập nhật `PROJECT_REPORT_INFO.md`:
+
+- chỉ sửa những section bị ảnh hưởng;
+- giữ cấu trúc hiện tại;
+- giữ numbering hiện tại;
+- tránh thay đổi câu chữ không liên quan;
+- tránh xóa bằng chứng source;
+- tránh làm mất thông tin trước đó vẫn còn đúng.
+
+
+# 16. Kiểm tra chéo trước khi hoàn thành task
+
+Trước khi trả lời người dùng rằng task đã hoàn thành, kiểm tra:
+
+1. Source code đã đúng chưa?
+2. Build/typecheck/lint liên quan có lỗi không?
+3. `PROJECT_REPORT_INFO.md` có bị lỗi thời không?
+4. Feature status trong tài liệu có đúng không?
+5. Technology stack có đúng không?
+6. Database schema có đúng không?
+7. AI provider/model có đúng không?
+8. Hạn chế nào đã được giải quyết chưa?
+9. Hướng phát triển nào đã trở thành feature thật chưa?
+10. File/path được tài liệu tham chiếu còn tồn tại không?
+
+
+# 17. Báo cáo sau khi chỉnh sửa
+
+Sau mỗi task có ảnh hưởng đến tài liệu, cuối câu trả lời phải ghi ngắn gọn:
+
+"PROJECT_REPORT_INFO.md: đã cập nhật"
+
+và liệt kê các section chính vừa thay đổi.
+
+Ví dụ:
+
+PROJECT_REPORT_INFO.md: đã cập nhật
+- 3.7 API / dịch vụ bên ngoài
+- 6.13 AI hỗ trợ task
+- 12. Các module quan trọng
+- 16. Hạn chế hiện tại
+- 20. Tóm tắt dự án
+
+
+# 18. Trường hợp không cần cập nhật
+
+Không cần chỉnh `PROJECT_REPORT_INFO.md` nếu thay đổi chỉ gồm:
+
+- sửa typo
+- đổi spacing
+- chỉnh màu
+- đổi padding/margin nhỏ
+- format code
+- rename biến local không ảnh hưởng kiến trúc
+- sửa text UI nhỏ không ảnh hưởng chức năng
+- refactor nội bộ nhưng hành vi, kiến trúc và file public không thay đổi
+
+Tuy nhiên nếu refactor làm thay đổi:
+- file/module
+- architecture
+- logic
+- dependency
+- feature behavior
+
+thì vẫn phải cập nhật.
+
+
+# 19. PROJECT_REPORT_INFO.md là tài liệu sống
+
+Không xem `PROJECT_REPORT_INFO.md` là file chỉ tạo một lần.
+
+Đây là LIVE DOCUMENTATION.
+
+Source code là nguồn sự thật chính.
+
+Thứ tự ưu tiên:
+
+SOURCE CODE
+    ↓
+DATABASE SCHEMA
+    ↓
+PACKAGE / CONFIG
+    ↓
+README / SETUP
+    ↓
+PROJECT_REPORT_INFO.md
+
+Nếu tài liệu mâu thuẫn source:
+- sửa tài liệu theo source.
+- không sửa source chỉ để khớp tài liệu, trừ khi user yêu cầu.
+
+
+# 20. Quy tắc cuối cùng
+
+Mọi task phát triển SabTask phải kết thúc với một trong hai kết luận:
+
+A. `PROJECT_REPORT_INFO.md` đã được cập nhật vì thay đổi ảnh hưởng tài liệu.
+
+hoặc
+
+B. Không cần cập nhật `PROJECT_REPORT_INFO.md` vì thay đổi không ảnh hưởng thông tin kỹ thuật/báo cáo.
+
+Không được bỏ qua bước kiểm tra này.
